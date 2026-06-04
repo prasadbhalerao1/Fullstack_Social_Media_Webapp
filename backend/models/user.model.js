@@ -56,12 +56,6 @@ const userSchema = new mongoose.Schema(
         ref: "Post",
       },
     ],
-    posts: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Post",
-      },
-    ],
     reels: [
       {
         type: mongoose.Schema.Types.ObjectId,
