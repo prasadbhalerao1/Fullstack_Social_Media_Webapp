@@ -6,21 +6,27 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
       unique: true,
+      lowercase: true,
+      trim: true,
     },
     email: {
       type: String,
       required: true,
       unique: true,
+      lowercase: true,
+      trim: true,
     },
     password: {
       type: String,
       required: true,
+      minlength: 6,
     },
     profileImage: {
       type: String,
     },
     bio: {
       type: String,
+      maxlength: 160,
     },
     isVerified: {
       type: Boolean,
