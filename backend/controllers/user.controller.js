@@ -134,6 +134,36 @@ export const profileUser = async (req, res) => {
   }
 };
 
+export const uploadProfileImage = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const profileImageUrl = req.file.path;
+    if (!profileImageUrl) {
+      return res
+        .status(400)
+        .json({ success: false, message: "No image uploaded" });
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { profileImage: profileImageUrl },
+      { new: true },
+    ).select("-password");
+
+    res.status(200).json({
+      success: true,
+      user: updatedUser,
+    });
+  } catch (error) {
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "Profile Image upload error : " + error.message,
+      });
+  }
+};
+
 export const allUsers = async (req, res) => {
   try {
     const users = await User.find();
@@ -142,11 +172,9 @@ export const allUsers = async (req, res) => {
       users,
     });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Error fetching users : " + error.message,
-      });
+    res.status(500).json({
+      success: false,
+      message: "Error fetching users : " + error.message,
+    });
   }
 };
