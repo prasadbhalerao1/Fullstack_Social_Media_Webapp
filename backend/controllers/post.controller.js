@@ -12,7 +12,7 @@ export const createPost = async (req, res) => {
         .json({ success: false, message: "No media file uploaded" });
     }
 
-    const mediaUrl = req.file.path;
+    const mediaUrl = req.file?.path;
     const post = await Post.create({
       user: userId,
       mediaType,
