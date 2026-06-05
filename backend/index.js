@@ -6,6 +6,7 @@ import bodyParser from "body-parser";
 import mongoSanitize from "express-mongo-sanitize";
 import userRouter from "./routes/user.routes.js";
 import postRouter from "./routes/post.routes.js";
+import reelRouter from "./routes/reel.routes.js";
 
 import connectDB from "./config/db.js";
 
@@ -22,7 +23,8 @@ app.use(cookieParser());
 app.use(mongoSanitize());
 
 app.use("api/v1/user", userRouter);
-app.use("api/v1/posts", postRouter);
+app.use("api/v1/post", postRouter);
+app.use("api/v1/reel", reelRouter);
 
 // connectDB();
 
