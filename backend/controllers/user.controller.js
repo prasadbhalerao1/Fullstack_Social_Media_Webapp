@@ -45,14 +45,14 @@ export const registerUser = async (req, res) => {
 
     const { password: _, ...userData } = savedUser._doc; // Exclude password from the response
 
-    res.status(201).cookie("token", token, cookieOptions).json({
+    return res.status(201).cookie("token", token, cookieOptions).json({
       success: true,
       message: "User registered successfully",
       user: userData,
       token,
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Registration error : " + error.message,
     });
@@ -89,14 +89,14 @@ export const loginUser = async (req, res) => {
 
     const { password: _, ...userData } = user._doc; // Exclude password from the response
 
-    res.status(200).cookie("token", token, cookieOptions).json({
+    return res.status(200).cookie("token", token, cookieOptions).json({
       success: true,
       message: "User logged in successfully",
       user: userData,
       token,
     });
   } catch (error) {
-    res
+    return res
       .status(500)
       .json({ success: false, message: "Login error : " + error.message });
   }
@@ -123,12 +123,12 @@ export const profileUser = async (req, res) => {
         .status(404)
         .json({ success: false, message: "User not found" });
     }
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       user,
     });
   } catch (error) {
-    res
+    return res
       .status(500)
       .json({ success: false, message: "Profile error : " + error.message });
   }
@@ -150,12 +150,12 @@ export const uploadProfileImage = async (req, res) => {
       { new: true },
     ).select("-password");
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       user: updatedUser,
     });
   } catch (error) {
-    res
+    return res
       .status(500)
       .json({
         success: false,
@@ -167,12 +167,12 @@ export const uploadProfileImage = async (req, res) => {
 export const allUsers = async (req, res) => {
   try {
     const users = await User.find();
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       users,
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Error fetching users : " + error.message,
     });
