@@ -7,6 +7,7 @@ import mongoSanitize from "express-mongo-sanitize";
 import userRouter from "./routes/user.routes.js";
 import postRouter from "./routes/post.routes.js";
 import reelRouter from "./routes/reel.routes.js";
+import storyRouter from "./routes/story.route.js";
 
 import connectDB from "./config/db.js";
 
@@ -25,6 +26,7 @@ app.use(mongoSanitize());
 app.use("api/v1/user", userRouter);
 app.use("api/v1/post", postRouter);
 app.use("api/v1/reel", reelRouter);
+app.use("api/v1/story", storyRouter);
 
 // connectDB();
 
