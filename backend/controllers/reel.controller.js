@@ -119,7 +119,13 @@ export const addCommentToReel = async (req, res) => {
         .json({ success: false, message: "Reel not found" });
     }
 
-    const { text } = req.body;
+    const { text } = req.body || {};
+    if (!text) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Comment text is required" });
+    }
+
     const comment = {
       user: userId,
       text,

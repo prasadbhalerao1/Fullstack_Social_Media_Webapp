@@ -1,5 +1,6 @@
 import express from "express";
 import Post from "../models/post.model.js";
+import User from "../models/user.model.js";
 
 export const createPost = async (req, res) => {
   try {
@@ -19,6 +20,12 @@ export const createPost = async (req, res) => {
       mediaUrl,
       caption,
     });
+
+    const user = await User.findById(userId)
+    if (user){
+      user.posts.push(post?._id);
+      await user.save();
+    }
 
     return res.status(201).json({
       success: true,
@@ -146,7 +153,13 @@ export const addCommentToPost = async (req, res) => {
         .json({ success: false, message: "Post not found" });
     }
 
-    const { text } = req.body;
+    const { text } = req.body || {};
+    if (!text) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Comment text is required" });
+    }
+
     const comment = {
       user: userId,
       text,

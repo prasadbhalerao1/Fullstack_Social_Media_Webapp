@@ -33,6 +33,7 @@ export const createStory = async (req, res) => {
 
 export const getAllStories = async (req, res) => {
   try {
+    const now = new Date();
     const stories = await Story.find({ expiresAt: { $gt: now } })
       .populate("user", "username profileImage")
       .populate("comment.user", "username profileImage")
@@ -124,7 +125,13 @@ export const addCommentToStory = async (req, res) => {
         .json({ success: false, message: "Story not found" });
     }
 
-    const { text } = req.body;
+    const { text } = req.body || {};
+    if (!text) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Comment text is required" });
+    }
+
     const comment = {
       user: userId,
       text,

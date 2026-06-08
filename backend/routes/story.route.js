@@ -21,7 +21,6 @@ router.post(
 
 router.get("/all", authMiddleware, getAllStories);
 router.get("/:id/view", authMiddleware, viewStory);
-router.get("/:id", authMiddleware, getAllStories);
 router.delete("/:id", authMiddleware, deleteStoriesById);
 router.put("/:id/like", authMiddleware, toggleLikeStory);
 router.post("/:id/comment", authMiddleware, addCommentToStory);

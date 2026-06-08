@@ -1,6 +1,6 @@
+import "dotenv/config";
 import express from "express";
 import cors from "cors";
-import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import userRouter from "./routes/user.routes.js";
 import postRouter from "./routes/post.routes.js";
@@ -8,8 +8,6 @@ import reelRouter from "./routes/reel.routes.js";
 import storyRouter from "./routes/story.route.js";
 
 import connectDB from "./config/db.js";
-
-dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -19,10 +17,10 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(cookieParser());
 
-app.use("api/v1/user", userRouter);
-app.use("api/v1/post", postRouter);
-app.use("api/v1/reel", reelRouter);
-app.use("api/v1/story", storyRouter);
+app.use("/api/v1/user", userRouter);
+app.use("/api/v1/post", postRouter);
+app.use("/api/v1/reel", reelRouter);
+app.use("/api/v1/story", storyRouter);
 
 connectDB();
 
