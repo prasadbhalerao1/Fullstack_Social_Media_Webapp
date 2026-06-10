@@ -73,7 +73,7 @@ const Sidebar = () => {
       {/* Logo Section */}
       <div className="px-2 py-4">
         <Link to="/" className="flex items-center gap-3">
-          <img src={logo_2} alt="logo" className="w-8 h-8 object-contain" />
+          <img src={logo} alt="logo" className="w-12 h-12 object-contain" />
           <span className="hidden md:block text-2xl font-black tracking-wider text-white">
             RUNTIME
           </span>

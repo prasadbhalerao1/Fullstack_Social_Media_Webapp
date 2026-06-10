@@ -1,10 +1,13 @@
 import React, { useState } from "react";
 import { Upload, Image as ImageIcon, Video as VideoIcon, X } from "lucide-react";
+import { axiosInstance } from "../lib/axios";
+import { toast } from "react-hot-toast";
 
-const CreateMedia = ({ onClose }) => {
+const CreateMedia = ({ onClose, onUploadSuccess }) => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState("");
   const [mediaType, setMediaType] = useState("image");
+  const [uploading, setUploading] = useState(false);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -32,6 +35,37 @@ const CreateMedia = ({ onClose }) => {
   const clearSelection = () => {
     setSelectedFile(null);
     setPreviewUrl("");
+  };
+
+  const handleUpload = async () => {
+    if (!selectedFile) return;
+    setUploading(true);
+
+    const formData = new FormData();
+    formData.append("media", selectedFile);
+    formData.append("mediaType", mediaType);
+
+    try {
+      const { data } = await axiosInstance.post("/story/create", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      if (data.success) {
+        toast.success("Story uploaded successfully!");
+        if (onUploadSuccess) {
+          onUploadSuccess();
+        } else if (onClose) {
+          onClose();
+        }
+      }
+    } catch (error) {
+      console.error("Upload failed:", error);
+      toast.error(error.response?.data?.message || "Failed to upload story.");
+    } finally {
+      setUploading(false);
+    }
   };
 
   return (
@@ -84,10 +118,11 @@ const CreateMedia = ({ onClose }) => {
       )}
 
       <button
-        disabled={!selectedFile}
+        disabled={!selectedFile || uploading}
+        onClick={handleUpload}
         className="mt-6 w-full py-3.5 bg-indigo-600 hover:bg-indigo-500 disabled:bg-neutral-800 disabled:text-neutral-500 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition duration-200 shadow-lg shadow-indigo-600/10"
       >
-        Upload Story
+        {uploading ? "Uploading..." : "Upload Story"}
       </button>
     </div>
   );
