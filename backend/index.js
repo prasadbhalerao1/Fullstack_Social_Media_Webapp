@@ -12,7 +12,13 @@ import connectDB from "./config/db.js";
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(cors());
+const corsInstance = cors({
+  origin: ["http://localhost:5173"],
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE"],
+});
+
+app.use(corsInstance);
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(cookieParser());

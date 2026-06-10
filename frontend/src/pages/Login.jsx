@@ -1,9 +1,15 @@
 const logo = "/logo.png";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AuthForm from "../components/AuthForm";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
+import { useDispatch , useSelector } from "react-redux";
+import { registerUser, loginUser } from "../redux/slices/userSlice";
+
 
 const Login = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { user } = useSelector((state) => state.user);
   const [searchParams] = useSearchParams();
   const [view, setView] = useState("login");
   const [error, setError] = useState({});
@@ -18,6 +24,18 @@ const Login = () => {
   });
 
   const token = searchParams.get("token") || "";
+
+  useEffect(() => {
+    if (token) {
+      setView("passwordChange");
+    }
+  }, [token]);
+
+  useEffect(() => {
+    if (user) {
+      navigate("/");
+    }
+  }, [user, navigate]);
 
   const validateForm = () => {
     const newErrors = {};
@@ -111,22 +129,36 @@ const Login = () => {
     }
 
     if (view === "register") {
-      console.log("register", formData);
-      return;
+      dispatch(
+        registerUser({
+          username: formData.username,
+          email: formData.email,
+          password: formData.password,
+        }),
+      );
     }
 
     if (view === "login") {
-      console.log("login", formData);
-      return;
+      dispatch(
+        loginUser({
+          email: formData.email,
+          password: formData.password,
+        }),
+      );
     }
 
     if (view === "forgotPassword") {
-      console.log("forgotPassword", formData);
-      return;
+      // dispatch(forgotPassword({
+      //   email: formData.email,
+      // }));
     }
 
     if (view === "passwordChange") {
-      console.log("passwordChange", formData);
+      // dispatch(passwordChange({
+      //   token: token,
+      //   newPassword: formData.newPassword,
+      //   confirmPassword: formData.confirmPassword,
+      // }));
     }
 
     setFormData({

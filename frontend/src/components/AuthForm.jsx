@@ -1,4 +1,3 @@
-import React from "react";
 import { Mail, User, Lock } from "lucide-react";
 
 const AuthForm = ({
