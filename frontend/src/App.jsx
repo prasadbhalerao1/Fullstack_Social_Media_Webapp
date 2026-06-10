@@ -11,7 +11,6 @@ import { useDispatch } from "react-redux";
 import { getCurrentUser } from "./redux/slices/userSlice";
 
 function App() {
-
   const dispatch = useDispatch();
   useEffect(() => {
     dispatch(getCurrentUser());

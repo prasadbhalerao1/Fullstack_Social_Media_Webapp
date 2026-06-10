@@ -2,16 +2,16 @@ const logo = "/logo.png";
 import { useState, useEffect } from "react";
 import AuthForm from "../components/AuthForm";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { useDispatch , useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { registerUser, loginUser } from "../redux/slices/userSlice";
-
 
 const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.user);
   const [searchParams] = useSearchParams();
-  const [view, setView] = useState("login");
+  const token = searchParams.get("token") || "";
+  const [view, setView] = useState(token ? "passwordChange" : "login");
   const [error, setError] = useState({});
 
   const [formData, setFormData] = useState({
@@ -22,14 +22,6 @@ const Login = () => {
     confirmPassword: "",
     newPassword: "",
   });
-
-  const token = searchParams.get("token") || "";
-
-  useEffect(() => {
-    if (token) {
-      setView("passwordChange");
-    }
-  }, [token]);
 
   useEffect(() => {
     if (user) {
@@ -186,7 +178,7 @@ const Login = () => {
 
   return (
     <div className="min-h-screen bg-black/95 px-4 py-6 text-white sm:px-6 flex items-center justify-center font-sans">
-      <div className="relative flex w-full max-w-5xl min-h-[620px] flex-col overflow-hidden rounded-3xl bg-white/5 shadow-2xl backdrop-blur-xl md:flex-row">
+      <div className="relative flex w-full max-w-5xl min-h-155 flex-col overflow-hidden rounded-3xl bg-white/5 shadow-2xl backdrop-blur-xl md:flex-row">
         {/* Left Section */}
         <div className="hidden md:flex md:w-1/2 p-8 items-center justify-center">
           <div className="flex h-full w-full items-center justify-center rounded-3xl bg-neutral-900/80 ring-1 ring-white/5 px-10 py-12 text-center shadow-lg">

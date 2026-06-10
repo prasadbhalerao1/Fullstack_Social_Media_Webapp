@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -14,7 +14,7 @@ import {
 import { logoutUser } from "../redux/slices/userSlice";
 
 const logo = "/logo.png";
-const logo_2 = "/favicon.svg";
+
 
 const Sidebar = () => {
   const { user: currentUser } = useSelector((state) => state.user);
@@ -53,9 +53,7 @@ const Sidebar = () => {
     console.log("Open Modal:", type);
   };
 
-  const handleOpenModel = () => {
-    handleOpenModal("post");
-  };
+
 
   // Determine active item based on current URL path
   const isActive = (item) => {

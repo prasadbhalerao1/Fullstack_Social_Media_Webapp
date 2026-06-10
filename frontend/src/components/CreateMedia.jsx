@@ -1,5 +1,10 @@
-import React, { useState } from "react";
-import { Upload, Image as ImageIcon, Video as VideoIcon, X } from "lucide-react";
+import { useState } from "react";
+import {
+  Upload,
+  Image as ImageIcon,
+  Video as VideoIcon,
+  X,
+} from "lucide-react";
 import { axiosInstance } from "../lib/axios";
 import { toast } from "react-hot-toast";
 
@@ -73,7 +78,10 @@ const CreateMedia = ({ onClose, onUploadSuccess }) => {
       <div className="flex items-center justify-between mb-4 border-b border-white/10 pb-3">
         <h3 className="text-lg font-bold text-white">Create a New Story</h3>
         {onClose && (
-          <button onClick={onClose} className="text-neutral-400 hover:text-white transition">
+          <button
+            onClick={onClose}
+            className="text-neutral-400 hover:text-white transition"
+          >
             <X size={18} />
           </button>
         )}
@@ -94,19 +102,33 @@ const CreateMedia = ({ onClose, onUploadSuccess }) => {
           <div className="p-4 bg-neutral-800 rounded-full text-indigo-400 group-hover:scale-110 transition duration-300 mb-4">
             <Upload size={24} />
           </div>
-          <span className="text-sm font-medium text-neutral-300">Click or Drag & Drop file</span>
+          <span className="text-sm font-medium text-neutral-300">
+            Click or Drag & Drop file
+          </span>
           <div className="flex items-center gap-3 mt-4 text-xs text-neutral-400">
-            <span className="flex items-center gap-1"><ImageIcon size={14} className="text-blue-400" /> Image</span>
+            <span className="flex items-center gap-1">
+              <ImageIcon size={14} className="text-blue-400" /> Image
+            </span>
             <span className="text-neutral-600">|</span>
-            <span className="flex items-center gap-1"><VideoIcon size={14} className="text-emerald-400" /> Video</span>
+            <span className="flex items-center gap-1">
+              <VideoIcon size={14} className="text-emerald-400" /> Video
+            </span>
           </div>
         </div>
       ) : (
         <div className="relative w-full h-64 rounded-2xl overflow-hidden bg-black flex items-center justify-center group border border-white/5">
           {mediaType === "video" ? (
-            <video src={previewUrl} className="w-full h-full object-contain" controls />
+            <video
+              src={previewUrl}
+              className="w-full h-full object-contain"
+              controls
+            />
           ) : (
-            <img src={previewUrl} alt="preview" className="w-full h-full object-contain" />
+            <img
+              src={previewUrl}
+              alt="preview"
+              className="w-full h-full object-contain"
+            />
           )}
           <button
             onClick={clearSelection}
