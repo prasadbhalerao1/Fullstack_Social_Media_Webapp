@@ -34,14 +34,64 @@ export const createStory = async (req, res) => {
 export const getAllStories = async (req, res) => {
   try {
     const now = new Date();
-    const stories = await Story.find({ expiresAt: { $gt: now } })
+    const userId = req.user._id;
+    const stories = await Story.find({
+      user: { $ne: userId },
+      expiresAt: { $gt: now },
+    })
       .populate("user", "username profileImage")
-      .populate("comment.user", "username profileImage")
+      .populate({ path: "comment.user", select: "username profileImage" })
+      .populate("viewers", "username profileImage")
       .sort({ createdAt: -1 });
+
+    const storiesByUser = stories.reduce((acc, story) => {
+      const userId = story.user._id;
+      if (!acc[userId]) {
+        acc[userId] = {
+          user: story.user,
+          stories: [],
+          hasUnViewed: false,
+        };
+      }
+      const hasViewed = story?.viewers?.some(
+        (viewer) => viewer._id.toString() === userId.toString(),
+      );
+      if (!hasViewed) {
+        acc[userId].hasUnViewed = true;
+      }
+      acc[userId].stories.push(story);
+      return acc;
+    }, {});
+
+    const userStories = await Story.find({
+      user: userId,
+      expiresAt: { $gt: now },
+    })
+      .populate("user", "username profileImage")
+      .populate({ path: "comment.user", select: "username profileImage" })
+      .populate("viewers", "username profileImage")
+      .sort({ createdAt: -1 });
+
+    if (userStories.length > 0) {
+      storiesByUser[userId] = {
+        user: userStories[0].user,
+        stories: userStories,
+        hasUnViewed: false,
+        isOwn: true,
+      };
+    }
+
+    const storyArray = Object.values(storiesByUser);
+
+    const sortedStories = storyArray.sort((a, b) => {
+      if (a.isOwn) return -1;
+      if (b.isOwn) return 1;
+      return 0;
+    });
 
     return res.status(200).json({
       success: true,
-      stories,
+      stories: sortedStories,
     });
   } catch (error) {
     return res.status(500).json({
