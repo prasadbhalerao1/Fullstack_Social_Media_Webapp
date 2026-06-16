@@ -41,6 +41,9 @@ const CreateMedia = ({ type = "post", onClose, onUploadSuccess }) => {
     setError(null);
     setIsPlaying(false);
     setIsMuted(false);
+  }, [currentType]);
+
+  useEffect(() => {
     setCurrentType(type);
   }, [type]);
 
