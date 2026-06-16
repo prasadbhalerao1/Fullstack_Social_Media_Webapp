@@ -19,12 +19,19 @@ const logo = "/logo.png";
 
 const Sidebar = () => {
   const { user: currentUser } = useSelector((state) => state.user);
+  const { conversations } = useSelector((state) => state.messages);
   const dispatch = useDispatch();
   const location = useLocation();
   const navigate = useNavigate();
 
   const [active, setActive] = useState("home");
   const [isCreateMediaModalOpen, setIsCreateMediaModalOpen] = useState(false);
+
+  // Total unread badge count across all conversations
+  const totalUnread = conversations.reduce(
+    (sum, c) => sum + (c.unreadCount || 0),
+    0
+  );
 
   const navItems = [
     { id: "home", name: "Home", icon: <Home size={20} />, path: "/" },
@@ -40,6 +47,7 @@ const Sidebar = () => {
       name: "Messages",
       icon: <MessageCircle size={20} />,
       path: "/chats",
+      badge: totalUnread,
     },
     {
       id: "profile",
@@ -51,16 +59,10 @@ const Sidebar = () => {
     { id: "notifications", name: "Notifications", icon: <Bell size={20} /> },
   ];
 
-  const handleOpenModal = (type) => {
-    setIsCreateMediaModalOpen(true);
-  };
-
   // Determine active item based on current URL path
   const isActive = (item) => {
     if (item.path) {
-      if (item.path === "/") {
-        return location.pathname === "/";
-      }
+      if (item.path === "/") return location.pathname === "/";
       return location.pathname.startsWith(item.path);
     }
     return active === item.id;
@@ -108,9 +110,17 @@ const Sidebar = () => {
                   key={item.id}
                   to={item.path}
                   onClick={() => setActive(item.id)}
-                  className={`flex items-center gap-3 p-3 rounded-2xl transition-all duration-300 cursor-pointer justify-center md:justify-start ${activeClass}`}
+                  className={`relative flex items-center gap-3 p-3 rounded-2xl transition-all duration-300 cursor-pointer justify-center md:justify-start ${activeClass}`}
                 >
-                  {item.icon}
+                  {/* Icon with badge */}
+                  <div className="relative">
+                    {item.icon}
+                    {item.badge > 0 && (
+                      <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-0.5 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center leading-none">
+                        {item.badge > 99 ? "99+" : item.badge}
+                      </span>
+                    )}
+                  </div>
                   <span className="hidden md:inline font-medium">
                     {item.name}
                   </span>
@@ -136,7 +146,7 @@ const Sidebar = () => {
         {/* Create Button Section */}
         <div className="mt-auto px-2 pb-4">
           <button
-            onClick={() => handleOpenModal("post")}
+            onClick={() => setIsCreateMediaModalOpen(true)}
             className="flex items-center justify-center gap-2 w-full p-3 md:py-3.5 rounded-2xl bg-white hover:bg-neutral-200 text-black font-semibold shadow-lg shadow-white/10 transition-all duration-300 cursor-pointer"
           >
             <Plus size={20} />
