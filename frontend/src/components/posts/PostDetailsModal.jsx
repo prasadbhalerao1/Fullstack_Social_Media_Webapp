@@ -7,6 +7,7 @@ import FollowButton from "@/components/common/FollowButton.jsx";
 import MediaIcons from "@/components/common/MediaIcons.jsx";
 import CommentForm from "@/components/common/CommentForm.jsx";
 import Media from "@/components/common/Media.jsx";
+import CommentSection from "@/components/common/CommentSection.jsx";
 import { timeAgo } from "@/lib/timeAgo.js";
 
 const PostDetailsModal = ({
@@ -151,37 +152,10 @@ const PostDetailsModal = ({
             )}
 
             {/* Comments List */}
-            {post?.comment?.length > 0 ? (
-              post.comment.map((c, idx) => (
-                <div key={c._id || idx} className="flex gap-3 group">
-                  <ProfileImage user={c.user} className="w-8 h-8 shrink-0" showOnlineStatus={false} />
-                  <div className="flex flex-col w-full">
-                    <span className="text-sm">
-                      <Link
-                        to={`/profile/${c.user?._id}`}
-                        className="font-semibold text-white hover:underline mr-2"
-                      >
-                        {c.user?.username}
-                      </Link>
-                      <span className="text-neutral-200">{c.text}</span>
-                    </span>
-                    <span className="text-xs text-neutral-500 mt-1 font-medium">
-                      {timeAgo(c.createdAt)}
-                    </span>
-                  </div>
-                  {/* Small like heart for comment could go here */}
-                  <button className="opacity-0 group-hover:opacity-100 mt-1 cursor-pointer">
-                    <Heart size={12} className="text-neutral-500 hover:text-white" />
-                  </button>
-                </div>
-              ))
-            ) : (
-              !post.caption && (
-                <div className="text-center text-neutral-500 text-sm mt-10">
-                  No comments yet.
-                </div>
-              )
-            )}
+            <CommentSection
+              comments={post?.comment}
+              fallbackText={!post?.caption ? "No comments yet." : ""}
+            />
           </div>
 
           {/* Bottom Actions */}
