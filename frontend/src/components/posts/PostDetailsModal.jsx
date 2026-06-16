@@ -31,9 +31,18 @@ const PostDetailsModal = ({
       setIsPlaying(false);
       setShowPlayIcon(true);
     } else {
-      videoRef.current.play().catch((err) => console.log(err));
-      setIsPlaying(true);
-      setShowPlayIcon(true);
+      const playPromise = videoRef.current.play();
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            setIsPlaying(true);
+            setShowPlayIcon(true);
+          })
+          .catch((err) => console.log(err));
+      } else {
+        setIsPlaying(true);
+        setShowPlayIcon(true);
+      }
     }
     setTimeout(() => setShowPlayIcon(false), 600);
   };
@@ -50,14 +59,22 @@ const PostDetailsModal = ({
   useEffect(() => {
     if (videoRef.current) {
       if (isOpen) {
-        videoRef.current.play().catch((err) => console.log(err));
-        setIsPlaying(true);
+        const playPromise = videoRef.current.play();
+        if (playPromise !== undefined) {
+          playPromise
+            .then(() => {
+              setIsPlaying(true);
+            })
+            .catch((err) => console.log(err));
+        } else {
+          setIsPlaying(true);
+        }
       } else {
         videoRef.current.pause();
         setIsPlaying(false);
       }
     }
-  }, [isOpen]);
+  }, [isOpen, isMuted]);
 
   if (!post) return null;
 
@@ -124,7 +141,7 @@ const PostDetailsModal = ({
                     >
                       {post?.user?.username}
                     </Link>
-                    <span className="text-neutral-200">{post.caption}</span>
+                    <span className="text-white font-[100]">{post.caption}</span>
                   </span>
                   <span className="text-xs text-neutral-500 mt-1">
                     {timeAgo(post?.createdAt)}

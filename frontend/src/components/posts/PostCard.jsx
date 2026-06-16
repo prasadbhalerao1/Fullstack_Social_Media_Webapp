@@ -30,9 +30,13 @@ const PostCard = ({ post, currentUser }) => {
       setIsPlaying(false);
       setShowPlayIcon(true);
     } else {
-      videoRef.current.play().catch((err) => console.log(err));
-      setIsPlaying(true);
-      setShowPlayIcon(true);
+      const playPromise = videoRef.current.play();
+      if (playPromise !== undefined) {
+        playPromise.then(() => {
+          setIsPlaying(true);
+          setShowPlayIcon(true);
+        }).catch((err) => console.log(err));
+      }
     }
     setTimeout(() => setShowPlayIcon(false), 600);
   };
@@ -66,8 +70,12 @@ const PostCard = ({ post, currentUser }) => {
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            video.play().catch((err) => console.log("Autoplay blocked:", err));
-            setIsPlaying(true);
+            const playPromise = video.play();
+            if (playPromise !== undefined) {
+              playPromise.then(() => {
+                setIsPlaying(true);
+              }).catch((err) => console.log("Autoplay blocked:", err));
+            }
           } else {
             video.pause();
             setIsPlaying(false);
@@ -81,7 +89,7 @@ const PostCard = ({ post, currentUser }) => {
     return () => {
       if (video) observer.unobserve(video);
     };
-  }, [post?.mediaType, showPostModal]);
+  }, [post?.mediaType, showPostModal, isMuted]);
 
   return (
     <div className="w-full max-w-[470px] mx-auto bg-black border-b border-white/10 sm:border sm:border-white/10 sm:rounded-xl mb-6 pb-4 sm:pb-0">
@@ -153,7 +161,7 @@ const PostCard = ({ post, currentUser }) => {
             >
               {post?.user?.username}
             </Link>
-            <span className="text-neutral-200">{post.caption}</span>
+            <span className="text-white font-[100]">{post.caption}</span>
           </div>
         )}
 
