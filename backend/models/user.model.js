@@ -68,6 +68,18 @@ const userSchema = new mongoose.Schema(
         ref: "Story",
       },
     ],
+    // Users this person has blocked
+    blocked: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
+    // null = currently online, Date = last time seen online
+    lastSeen: {
+      type: Date,
+      default: null,
+    },
   },
   { timestamps: true },
 );
