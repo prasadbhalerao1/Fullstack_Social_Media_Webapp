@@ -42,14 +42,25 @@ export const createPost = async (req, res) => {
 
 export const getAllPosts = async (req, res) => {
   try {
-    const posts = await Post.find()
+    const limit = parseInt(req.query.limit) || 10;
+    const cursor = req.query.cursor; // _id of last fetched post
+
+    const query = cursor ? { _id: { $lt: cursor } } : {};
+
+    const posts = await Post.find(query)
       .populate("user", "username profileImage")
       .populate("comment.user", "username profileImage")
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .limit(limit + 1);
+
+    const hasMore = posts.length > limit;
+    if (hasMore) posts.pop();
 
     return res.status(200).json({
       success: true,
       posts,
+      hasMore,
+      nextCursor: hasMore ? posts[posts.length - 1]._id : null,
     });
   } catch (error) {
     return res.status(500).json({

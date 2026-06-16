@@ -34,14 +34,25 @@ export const createReel = async (req, res) => {
 
 export const getAllReels = async (req, res) => {
   try {
-    const reels = await Reel.find()
+    const limit = parseInt(req.query.limit) || 10;
+    const cursor = req.query.cursor;
+
+    const query = cursor ? { _id: { $lt: cursor } } : {};
+
+    const reels = await Reel.find(query)
       .populate("user", "username profileImage")
       .populate("comment.user", "username profileImage")
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .limit(limit + 1);
+
+    const hasMore = reels.length > limit;
+    if (hasMore) reels.pop();
 
     return res.status(200).json({
       success: true,
       reels,
+      hasMore,
+      nextCursor: hasMore ? reels[reels.length - 1]._id : null,
     });
   } catch (error) {
     return res.status(500).json({
