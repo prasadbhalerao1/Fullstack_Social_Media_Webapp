@@ -316,3 +316,100 @@ export const updateUserProfile = async (req, res) => {
     });
   }
 };
+
+export const followUser = async (req, res) => {
+  try {
+    const targetUserId = req.body.targetUserId || req.params.id;
+    const currentUserId = req.user._id;
+
+    if (targetUserId === currentUserId.toString()) {
+      return res.status(400).json({ success: false, message: "You cannot follow yourself" });
+    }
+
+    const targetUser = await User.findById(targetUserId);
+    const currentUser = await User.findById(currentUserId);
+
+    if (!targetUser || !currentUser) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    if (currentUser.following.includes(targetUserId)) {
+      return res.status(400).json({ success: false, message: "You already follow this user" });
+    }
+
+    await User.findByIdAndUpdate(currentUserId, { $push: { following: targetUserId } });
+    await User.findByIdAndUpdate(targetUserId, { $push: { followers: currentUserId } });
+
+    // Real-time follow notification
+    const io = getIO();
+    if (io) {
+      io.to(targetUserId).emit("notification", {
+        type: "follow",
+        senderId: currentUserId,
+        senderName: currentUser.username,
+        message: `${currentUser.username} started following you`,
+      });
+    }
+
+    return res.status(200).json({ success: true, message: "User followed successfully" });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: "Error following user: " + error.message });
+  }
+};
+
+export const unfollowUser = async (req, res) => {
+  try {
+    const targetUserId = req.body.targetUserId || req.params.id;
+    const currentUserId = req.user._id;
+
+    if (targetUserId === currentUserId.toString()) {
+      return res.status(400).json({ success: false, message: "You cannot unfollow yourself" });
+    }
+
+    const targetUser = await User.findById(targetUserId);
+    const currentUser = await User.findById(currentUserId);
+
+    if (!targetUser || !currentUser) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    if (!currentUser.following.includes(targetUserId)) {
+      return res.status(400).json({ success: false, message: "You do not follow this user" });
+    }
+
+    // Filter array to remove target user's ID
+    currentUser.following = currentUser.following.filter(id => id.toString() !== targetUserId.toString());
+    await currentUser.save();
+
+    targetUser.followers = targetUser.followers.filter(id => id.toString() !== currentUserId.toString());
+    await targetUser.save();
+
+    return res.status(200).json({ success: true, message: "User unfollowed successfully" });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: "Error unfollowing user: " + error.message });
+  }
+};
+
+export const getFollowers = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).populate("followers", "username profileImage");
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+    return res.status(200).json({ success: true, followers: user.followers });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: "Error fetching followers: " + error.message });
+  }
+};
+
+export const getFollowing = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).populate("following", "username profileImage");
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+    return res.status(200).json({ success: true, following: user.following });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: "Error fetching following: " + error.message });
+  }
+};
