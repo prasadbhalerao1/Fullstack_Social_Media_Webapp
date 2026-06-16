@@ -209,11 +209,19 @@ const Stories = () => {
       const video = videoRef.current;
       if (video) {
         if (video.paused) {
-          video.play().catch((error) => {
-            console.log("Video play failed:", error);
-            setIsPlaying(false);
-          });
-          setIsPlaying(true);
+          const playPromise = video.play();
+          if (playPromise !== undefined) {
+            playPromise
+              .then(() => {
+                setIsPlaying(true);
+              })
+              .catch((error) => {
+                console.log("Video play failed:", error);
+                setIsPlaying(false);
+              });
+          } else {
+            setIsPlaying(true);
+          }
         } else {
           video.pause();
           setIsPlaying(false);
@@ -325,10 +333,17 @@ const Stories = () => {
       if (!video) return;
       video.muted = isMuted;
       if (activePlaying) {
-        video.play().catch((error) => {
-          console.log("Video play error:", error);
-          setIsPlaying(false);
-        });
+        const playPromise = video.play();
+        if (playPromise !== undefined) {
+          playPromise
+            .then(() => {
+              // Playing successfully
+            })
+            .catch((error) => {
+              console.log("Video play error:", error);
+              setIsPlaying(false);
+            });
+        }
       } else {
         video.pause();
       }
