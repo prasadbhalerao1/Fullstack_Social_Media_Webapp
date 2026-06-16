@@ -179,3 +179,37 @@ export const allUsers = async (req, res) => {
     });
   }
 };
+
+export const toggleFollowUser = async (req, res) => {
+  try {
+    const targetUserId = req.params.id;
+    const currentUserId = req.user._id;
+
+    if (targetUserId === currentUserId.toString()) {
+      return res.status(400).json({ success: false, message: "You cannot follow yourself" });
+    }
+
+    const targetUser = await User.findById(targetUserId);
+    const currentUser = await User.findById(currentUserId);
+
+    if (!targetUser || !currentUser) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    const isFollowing = currentUser.following.includes(targetUserId);
+
+    if (isFollowing) {
+      // Unfollow
+      await User.findByIdAndUpdate(currentUserId, { $pull: { following: targetUserId } });
+      await User.findByIdAndUpdate(targetUserId, { $pull: { followers: currentUserId } });
+      return res.status(200).json({ success: true, message: "User unfollowed successfully" });
+    } else {
+      // Follow
+      await User.findByIdAndUpdate(currentUserId, { $push: { following: targetUserId } });
+      await User.findByIdAndUpdate(targetUserId, { $push: { followers: currentUserId } });
+      return res.status(200).json({ success: true, message: "User followed successfully" });
+    }
+  } catch (error) {
+    return res.status(500).json({ success: false, message: "Error toggling follow : " + error.message });
+  }
+};

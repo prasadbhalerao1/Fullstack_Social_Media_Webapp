@@ -6,6 +6,7 @@ import {
   profileUser,
   allUsers,
   uploadProfileImage,
+  toggleFollowUser,
 } from "../controllers/user.controller.js";
 import { authMiddleware } from "../middleware/auth.middleware.js";
 import uploadCloudinary from "../middleware/cloudinaryUpload.js";
@@ -25,5 +26,6 @@ router.post(
 );
 
 router.get("/all", allUsers);
+router.post("/:id/follow", authMiddleware, toggleFollowUser);
 
 export default router;

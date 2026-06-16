@@ -117,3 +117,29 @@ export const updateProfileImage = (userData) => async (dispatch) => {
     dispatch(setLoading(false));
   }
 };
+
+export const followUser = (userId) => async (dispatch) => {
+  try {
+    const { data } = await axiosInstance.post(`/user/${userId}/follow`);
+    if (data.success) {
+      // Re-fetch current user to get updated following array
+      dispatch(getCurrentUser());
+    }
+  } catch (error) {
+    console.error("Follow error:", error);
+    toast.error(error.response?.data?.message || "Failed to follow user");
+  }
+};
+
+export const toggleSavePost = (postId) => async (dispatch) => {
+  try {
+    const { data } = await axiosInstance.put(`/post/${postId}/bookmark`);
+    if (data.success) {
+      dispatch(getCurrentUser());
+      toast.success(data.message);
+    }
+  } catch (error) {
+    console.error("Save post error:", error);
+    toast.error(error.response?.data?.message || "Failed to save post");
+  }
+};

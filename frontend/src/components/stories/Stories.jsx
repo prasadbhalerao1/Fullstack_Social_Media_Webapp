@@ -20,7 +20,8 @@ import { toast } from "react-hot-toast";
 import Modal from "@/components/common/Modal.jsx";
 import CreateMedia from "@/components/media/CreateMedia.jsx";
 import ProfileImage from "@/components/common/ProfileImage.jsx";
-import CommentsDrawer from "@/components/common/CommentsDrawer.jsx";
+import CommentsDrawer from "./CommentsDrawer.jsx";
+import { timeAgo } from "@/lib/timeAgo.js";
 import {
   getAllStories,
   viewStory,
@@ -441,6 +442,11 @@ const Stories = () => {
                 >
                   {currentStoryUser?.username}
                 </Link>
+                {currentStory?.createdAt && (
+                  <span className="text-[10px] text-neutral-400 font-medium">
+                    • {timeAgo(currentStory.createdAt)}
+                  </span>
+                )}
               </div>
               <div className="flex items-center gap-4 text-white/80 z-30">
                 {currentStoryUser?._id === currentUser?._id && (

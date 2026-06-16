@@ -1,7 +1,8 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { X } from "lucide-react";
 import { Link } from "react-router-dom";
-import ProfileImage from "./ProfileImage.jsx";
+import { timeAgo } from "@/lib/timeAgo.js";
+import ProfileImage from "@/components/common/ProfileImage.jsx";
 
 const CommentsDrawer = ({
   isOpen,
@@ -57,12 +58,19 @@ const CommentsDrawer = ({
                     showOnlineStatus={false}
                   />
                   <div className="flex-1 flex flex-col bg-white/5 rounded-2xl px-4 py-2 border border-white/5">
-                    <Link
-                      to={`/profile/${c.user?._id}`}
-                      className="text-xs text-neutral-400 font-bold hover:underline"
-                    >
-                      {c.user?.username || "user"}
-                    </Link>
+                    <div className="flex justify-between items-center w-full">
+                      <Link
+                        to={`/profile/${c.user?._id}`}
+                        className="text-xs text-neutral-400 font-bold hover:underline"
+                      >
+                        {c.user?.username || "user"}
+                      </Link>
+                      {c.createdAt && (
+                        <span className="text-[10px] text-neutral-500 font-medium">
+                          {timeAgo(c.createdAt)}
+                        </span>
+                      )}
+                    </div>
                     <span className="text-sm text-neutral-200 mt-1">
                       {c.text}
                     </span>

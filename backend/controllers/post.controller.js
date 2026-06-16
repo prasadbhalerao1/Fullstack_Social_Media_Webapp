@@ -187,4 +187,44 @@ export const addCommentToPost = async (req, res) => {
   }
 };
 
+export const toggleSavePost = async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    const userId = req.user._id;
+
+    if (!post) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Post not found" });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+    }
+
+    const index = user.savedPosts.indexOf(post._id);
+    if (index === -1) {
+      user.savedPosts.push(post._id);
+    } else {
+      user.savedPosts.splice(index, 1);
+    }
+
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: index === -1 ? "Post saved to bookmarks" : "Post removed from bookmarks",
+      savedPosts: user.savedPosts,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Error toggling bookmark for post : " + error.message,
+    });
+  }
+};
+
 
