@@ -33,6 +33,18 @@ const Profile = () => {
     }
   }, [id, dispatch]); // reload when target user id changes
 
+  // Verify current user vs viewed profile data on mount/change
+  useEffect(() => {
+    console.log("Profile Component Mounting/Loaded Social Graph:", {
+      currentUser: currentUser ? currentUser._id : null,
+      currentUsername: currentUser ? currentUser.username : null,
+      profileId: id,
+      profileUser: selectedUser ? selectedUser._id : null,
+      profileUsername: selectedUser ? selectedUser.username : null,
+      isOwnProfile
+    });
+  }, [currentUser, selectedUser, id, isOwnProfile]);
+
   // Fetch all posts to keep the modal details in sync when comments/likes are toggled
   useEffect(() => {
     dispatch(getAllPosts());
