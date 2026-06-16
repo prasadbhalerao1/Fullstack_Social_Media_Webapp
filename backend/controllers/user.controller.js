@@ -213,3 +213,93 @@ export const toggleFollowUser = async (req, res) => {
     return res.status(500).json({ success: false, message: "Error toggling follow : " + error.message });
   }
 };
+
+export const getProfileById = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id)
+      .select("-password")
+      .populate({
+        path: "posts",
+        select: "mediaUrl mediaType caption likes comment createdAt",
+        options: { sort: { createdAt: -1 } },
+      })
+      .populate("followers", "username profileImage")
+      .populate("following", "username profileImage");
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    return res.status(200).json({
+      success: true,
+      user,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Error fetching user profile: " + error.message,
+    });
+  }
+};
+
+export const getSuggestedUsers = async (req, res) => {
+  try {
+    const currentUserId = req.user._id;
+
+    const currentUser = await User.findById(currentUserId);
+    if (!currentUser) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    const suggestedUsers = await User.find({
+      _id: { $ne: currentUserId, $nin: currentUser.following },
+    })
+      .select("username profileImage bio")
+      .limit(5);
+
+    return res.status(200).json({
+      success: true,
+      users: suggestedUsers,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Error fetching suggested users: " + error.message,
+    });
+  }
+};
+
+export const updateUserProfile = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { username, bio } = req.body;
+
+    if (!username) {
+      return res.status(400).json({ success: false, message: "Username is required" });
+    }
+
+    const normalizedUsername = username.toLowerCase().trim();
+
+    const existingUser = await User.findOne({ username: normalizedUsername });
+    if (existingUser && existingUser._id.toString() !== userId.toString()) {
+      return res.status(400).json({ success: false, message: "Username is already taken" });
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { username: normalizedUsername, bio },
+      { new: true }
+    ).select("-password");
+
+    return res.status(200).json({
+      success: true,
+      message: "Profile updated successfully",
+      user: updatedUser,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Error updating profile: " + error.message,
+    });
+  }
+};
