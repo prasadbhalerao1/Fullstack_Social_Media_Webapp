@@ -8,9 +8,9 @@ const Home = () => {
     <div className="bg-black/95 flex text-white min-h-screen">
       <Sidebar />
       <main className="flex-1 flex justify-center py-6 px-4 md:px-8 overflow-auto">
-        <div className="w-full max-w-[850px] flex gap-12">
+        <div className="w-full max-w-212.5 flex gap-12">
           {/* Main Feed Column */}
-          <div className="flex-1 max-w-[470px] flex flex-col gap-6">
+          <div className="flex-1 max-w-117.5 flex flex-col gap-6">
             <Stories />
             <Feed />
           </div>

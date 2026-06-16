@@ -154,7 +154,7 @@ const MessageBubble = ({ message, isOwn }) => {
                   <Trash2 size={14} />
                 </button>
                 {showDeleteMenu && (
-                  <div className="absolute flex flex-col bottom-8 left-0 bg-neutral-900 border border-white/10 rounded-xl shadow-xl overflow-hidden z-20 min-w-[160px]">
+                  <div className="absolute flex flex-col bottom-8 left-0 bg-neutral-900 border border-white/10 rounded-xl shadow-xl overflow-hidden z-20 min-w-40">
                     <button
                       onClick={() => {
                         handleDelete("me");
@@ -238,7 +238,7 @@ const MessageBubble = ({ message, isOwn }) => {
               )}
 
               {message.text && (
-                <p className="break-words whitespace-pre-wrap">
+                <p className="wrap-break-word whitespace-pre-wrap">
                   {message.text}
                 </p>
               )}

@@ -110,7 +110,7 @@ const PostDetailsModal = ({ post, currentUser, isOpen, onClose, onDelete }) => {
         />
 
         {/* Right Side: Details */}
-        <div className="w-full md:w-[350px] flex flex-col bg-black border-l border-white/10 h-[40vh] md:h-full">
+        <div className="w-full md:w-87.5 flex flex-col bg-black border-l border-white/10 h-[40vh] md:h-full">
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
             <div className="flex items-center gap-3">
@@ -160,7 +160,7 @@ const PostDetailsModal = ({ post, currentUser, isOpen, onClose, onDelete }) => {
                     >
                       {post?.user?.username}
                     </Link>
-                    <span className="text-white font-[100]">
+                    <span className="text-white font-thin">
                       {post.caption}
                     </span>
                   </span>

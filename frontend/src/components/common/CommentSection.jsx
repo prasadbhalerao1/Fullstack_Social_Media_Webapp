@@ -21,7 +21,7 @@ const CommentSection = ({
                 showOnlineStatus={false}
               />
               <div className="flex flex-col min-h-0 min-w-0">
-                <span className="text-sm break-words">
+                <span className="text-sm wrap-break-word">
                   <Link
                     to={`/profile/${c.user?._id}`}
                     className="font-semibold text-white hover:underline mr-2"

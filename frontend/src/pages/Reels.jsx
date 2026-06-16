@@ -221,7 +221,7 @@ const ReelCard = ({
   return (
     <div
       ref={containerRef}
-      className="w-full max-w-[360px] md:max-w-[380px] aspect-[9/16] relative bg-neutral-950 rounded-3xl overflow-hidden flex flex-col justify-center shadow-2xl border border-white/5 group"
+      className="w-full max-w-90 md:max-w-95 aspect-9/16 relative bg-neutral-950 rounded-3xl overflow-hidden flex flex-col justify-center shadow-2xl border border-white/5 group"
     >
       <video
         ref={videoRef}

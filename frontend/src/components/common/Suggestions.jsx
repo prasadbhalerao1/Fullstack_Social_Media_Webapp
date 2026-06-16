@@ -55,7 +55,7 @@ const Suggestions = ({ isDarkTheme = true }) => {
               >
                 {currentUser.username}
               </Link>
-              <span className="text-xs text-neutral-500 truncate max-w-[150px]">
+              <span className="text-xs text-neutral-500 truncate max-w-37.5">
                 {currentUser.bio || "Runtime User"}
               </span>
             </div>
@@ -103,7 +103,7 @@ const Suggestions = ({ isDarkTheme = true }) => {
                 >
                   {user.username}
                 </Link>
-                <span className="text-[10px] text-neutral-500 truncate max-w-[120px]">
+                <span className="text-[10px] text-neutral-500 truncate max-w-30">
                   {user.bio || "Recommended for you"}
                 </span>
               </div>

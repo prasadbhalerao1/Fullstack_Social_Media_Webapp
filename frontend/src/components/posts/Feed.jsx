@@ -31,7 +31,7 @@ const Feed = () => {
   });
 
   return (
-    <div className="w-full max-w-[470px] mx-auto flex flex-col items-center">
+    <div className="w-full max-w-117.5 mx-auto flex flex-col items-center">
       {/* Initial loading state */}
       {loading && posts.length === 0 && (
         <div className="w-full flex justify-center py-10">

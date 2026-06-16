@@ -229,7 +229,7 @@ const VideoModal = ({
         </div>
 
         {/* Right Side: Reels details & comments */}
-        <div className="w-full md:w-[360px] flex flex-col bg-neutral-950 border-t md:border-t-0 md:border-l border-white/10 h-[35vh] md:h-full">
+        <div className="w-full md:w-90 flex flex-col bg-neutral-950 border-t md:border-t-0 md:border-l border-white/10 h-[35vh] md:h-full">
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3.5 border-b border-white/10">
             <div className="flex items-center gap-3">

@@ -116,7 +116,7 @@ const Sidebar = () => {
                   <div className="relative">
                     {item.icon}
                     {item.badge > 0 && (
-                      <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-0.5 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center leading-none">
+                      <span className="absolute -top-1.5 -right-1.5 min-w-4 h-4 px-0.5 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center leading-none">
                         {item.badge > 99 ? "99+" : item.badge}
                       </span>
                     )}
