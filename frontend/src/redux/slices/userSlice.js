@@ -37,10 +37,44 @@ export const userSlice = createSlice({
         state.user.savedPosts = action.payload;
       }
     },
+    updateFollowState: (state, action) => {
+      const { currentUserId, targetUserId } = action.payload;
+      
+      // Update currentUser's following list
+      if (state.user) {
+        if (!state.user.following) state.user.following = [];
+        const index = state.user.following.indexOf(targetUserId);
+        if (index === -1) {
+          state.user.following.push(targetUserId);
+        } else {
+          state.user.following.splice(index, 1);
+        }
+      }
+
+      // Update selectedUser's followers list if we are viewing the target profile page
+      if (state.selectedUser && state.selectedUser._id === targetUserId) {
+        if (!state.selectedUser.followers) state.selectedUser.followers = [];
+        const isFollowerPresent = state.selectedUser.followers.some(
+          (f) => (f._id || f) === currentUserId
+        );
+        if (isFollowerPresent) {
+          state.selectedUser.followers = state.selectedUser.followers.filter(
+            (f) => (f._id || f) !== currentUserId
+          );
+        } else {
+          const currentMockUser = state.user ? {
+            _id: state.user._id,
+            username: state.user.username,
+            profileImage: state.user.profileImage
+          } : currentUserId;
+          state.selectedUser.followers.push(currentMockUser);
+        }
+      }
+    },
   },
 });
 
-export const { setUser, setSelectedUser, setLoading, setError, setSocket, setSavedPost } = userSlice.actions;
+export const { setUser, setSelectedUser, setLoading, setError, setSocket, setSavedPost, updateFollowState } = userSlice.actions;
 
 export default userSlice.reducer;
 
@@ -147,16 +181,46 @@ export const updateProfileImage = (userData) => async (dispatch) => {
   }
 };
 
-export const followUser = (userId) => async (dispatch) => {
+export const followUser = (userId) => async (dispatch, getState) => {
   try {
-    const { data } = await axiosInstance.post(`/user/${userId}/follow`);
+    const { user: currentUser } = getState().user;
+    const isFollowing = currentUser?.following?.includes(userId);
+    const endpoint = isFollowing ? "/user/unfollow" : "/user/follow";
+
+    const { data } = await axiosInstance.post(endpoint, { targetUserId: userId });
     if (data.success) {
-      // Re-fetch current user to get updated following array
-      dispatch(getCurrentUser());
+      if (currentUser) {
+        dispatch(updateFollowState({ currentUserId: currentUser._id, targetUserId: userId }));
+      }
+      toast.success(data.message);
     }
   } catch (error) {
     console.error("Follow error:", error);
     toast.error(error.response?.data?.message || "Failed to follow user");
+  }
+};
+
+export const fetchFollowers = (userId) => async (dispatch) => {
+  try {
+    const { data } = await axiosInstance.get(`/user/${userId}/followers`);
+    if (data.success) {
+      return data.followers;
+    }
+  } catch (error) {
+    console.error("Fetch followers error:", error);
+    toast.error(error.response?.data?.message || "Failed to fetch followers");
+  }
+};
+
+export const fetchFollowing = (userId) => async (dispatch) => {
+  try {
+    const { data } = await axiosInstance.get(`/user/${userId}/following`);
+    if (data.success) {
+      return data.following;
+    }
+  } catch (error) {
+    console.error("Fetch following error:", error);
+    toast.error(error.response?.data?.message || "Failed to fetch following");
   }
 };
 

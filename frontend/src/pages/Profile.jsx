@@ -31,7 +31,7 @@ const Profile = () => {
     if (id) {
       dispatch(getProfileById(id));
     }
-  }, [id, dispatch, currentUser]); // reload when target user id changes or current user updates
+  }, [id, dispatch]); // reload when target user id changes
 
   // Fetch all posts to keep the modal details in sync when comments/likes are toggled
   useEffect(() => {
