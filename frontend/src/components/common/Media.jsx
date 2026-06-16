@@ -8,10 +8,14 @@ const Media = ({
   showPlayIcon,
   handleVideoClick,
   handleMuteToggle,
+  toggleMute, // support toggleMute prop
+  showIcon = true, // default to true
   containerClassName = "",
   mediaClassName = "w-full h-auto object-contain max-h-[600px]",
 }) => {
   if (!item) return null;
+
+  const onMuteToggle = handleMuteToggle || toggleMute;
 
   return (
     <div className={`relative w-full bg-neutral-950 flex justify-center items-center overflow-hidden ${containerClassName}`}>
@@ -45,12 +49,14 @@ const Media = ({
             </div>
           )}
           {/* Volume Control */}
-          <button
-            onClick={handleMuteToggle}
-            className="absolute bottom-4 right-4 bg-black/60 p-2 rounded-full text-white hover:bg-black/80 transition cursor-pointer z-20"
-          >
-            {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
-          </button>
+          {showIcon && (
+            <button
+              onClick={onMuteToggle}
+              className="absolute top-2 right-2 bg-black/60 p-2 rounded-full text-white hover:bg-black/80 transition cursor-pointer z-20"
+            >
+              {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+            </button>
+          )}
         </div>
       )}
     </div>
