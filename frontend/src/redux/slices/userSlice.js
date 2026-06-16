@@ -32,10 +32,15 @@ export const userSlice = createSlice({
     setSocket: (state, action) => {
       state.socket = action.payload;
     },
+    setSavedPost: (state, action) => {
+      if (state.user) {
+        state.user.savedPosts = action.payload;
+      }
+    },
   },
 });
 
-export const { setUser, setSelectedUser, setLoading, setError, setSocket } = userSlice.actions;
+export const { setUser, setSelectedUser, setLoading, setError, setSocket, setSavedPost } = userSlice.actions;
 
 export default userSlice.reducer;
 
@@ -159,7 +164,7 @@ export const toggleSavePost = (postId) => async (dispatch) => {
   try {
     const { data } = await axiosInstance.put(`/post/${postId}/bookmark`);
     if (data.success) {
-      dispatch(getCurrentUser());
+      dispatch(setSavedPost(data.savedPosts));
       toast.success(data.message);
     }
   } catch (error) {

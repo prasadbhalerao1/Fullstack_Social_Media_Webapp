@@ -6,7 +6,12 @@ const SaveButton = ({ post, size = 24 }) => {
   const dispatch = useDispatch();
   const { user: currentUser } = useSelector((state) => state.user);
 
-  const isSaved = currentUser?.savedPosts?.includes(post?._id);
+  const isSaved = currentUser?.savedPosts?.some((item) => {
+    if (typeof item === "object" && item !== null) {
+      return (item._id || item.id) === post?._id;
+    }
+    return item === post?._id;
+  });
 
   const handleSave = (e) => {
     e.stopPropagation();
@@ -18,7 +23,7 @@ const SaveButton = ({ post, size = 24 }) => {
   return (
     <button
       onClick={handleSave}
-      className="hover:opacity-70 transition cursor-pointer flex items-center justify-center text-gray-300"
+      className="transition-transform duration-200 hover:scale-110 active:scale-95 cursor-pointer flex items-center justify-center text-gray-300"
       title={isSaved ? "Remove from Bookmarks" : "Save to Bookmarks"}
     >
       <Bookmark
