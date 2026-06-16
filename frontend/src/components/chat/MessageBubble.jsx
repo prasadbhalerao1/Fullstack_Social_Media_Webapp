@@ -11,7 +11,7 @@
  *  - "Deleted for everyone" ghost state
  *  - "Edited" label next to timestamp
  */
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Check, CheckCheck, Pencil, Trash2, Smile, Play } from "lucide-react";
 import { useSocket } from "@/context/SocketContext.jsx";
@@ -38,6 +38,23 @@ const MessageBubble = ({ message, isOwn }) => {
   const [editMode, setEditMode] = useState(false);
   const [editText, setEditText] = useState(message.text);
   const [mediaViewer, setMediaViewer] = useState(false);
+  const [showDeleteMenu, setShowDeleteMenu] = useState(false);
+  const deleteMenuRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        deleteMenuRef.current &&
+        !deleteMenuRef.current.contains(event.target)
+      ) {
+        setShowDeleteMenu(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const handleOpenMedia = () => {
     if (message.mediaUrl) {
@@ -126,24 +143,36 @@ const MessageBubble = ({ message, isOwn }) => {
             )}
 
             {isOwn && (
-              <div className="relative group/del">
-                <button className="p-1.5 rounded-full bg-neutral-800 hover:bg-red-900/50 text-neutral-400 hover:text-red-400 transition">
+              <div ref={deleteMenuRef} className="relative">
+                <button
+                  onClick={() => setShowDeleteMenu((v) => !v)}
+                  className="p-1.5 rounded-full bg-neutral-800 hover:bg-red-900/50 text-neutral-400 hover:text-red-400 transition cursor-pointer"
+                  title="Delete options"
+                >
                   <Trash2 size={14} />
                 </button>
-                <div className="absolute hidden group/del:hover:flex flex-col bottom-8 left-0 bg-neutral-900 border border-white/10 rounded-xl shadow-xl overflow-hidden z-20 min-w-[160px]">
-                  <button
-                    onClick={() => handleDelete("me")}
-                    className="px-4 py-2.5 text-sm text-neutral-300 hover:bg-neutral-800 transition text-left"
-                  >
-                    Delete for me
-                  </button>
-                  <button
-                    onClick={() => handleDelete("everyone")}
-                    className="px-4 py-2.5 text-sm text-red-400 hover:bg-neutral-800 transition text-left"
-                  >
-                    Delete for everyone
-                  </button>
-                </div>
+                {showDeleteMenu && (
+                  <div className="absolute flex flex-col bottom-8 left-0 bg-neutral-900 border border-white/10 rounded-xl shadow-xl overflow-hidden z-20 min-w-[160px]">
+                    <button
+                      onClick={() => {
+                        handleDelete("me");
+                        setShowDeleteMenu(false);
+                      }}
+                      className="px-4 py-2.5 text-sm text-neutral-300 hover:bg-neutral-800 transition text-left cursor-pointer"
+                    >
+                      Delete for me
+                    </button>
+                    <button
+                      onClick={() => {
+                        handleDelete("everyone");
+                        setShowDeleteMenu(false);
+                      }}
+                      className="px-4 py-2.5 text-sm text-red-400 hover:bg-neutral-800 transition text-left cursor-pointer"
+                    >
+                      Delete for everyone
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>
