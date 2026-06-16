@@ -41,7 +41,7 @@ const ChatWindow = ({ conversation }) => {
   const { messages, hasMoreMessages, messagesLoading, typingUsers } =
     useSelector((state) => state.messages);
 
-  const messagesEndRef = useRef(null);
+  const messageRef = useRef(null);
   const listRef = useRef(null);
   const prevScrollHeight = useRef(0);
   const isFirstLoad = useRef(true);
@@ -82,13 +82,13 @@ const ChatWindow = ({ conversation }) => {
     if (!list) return;
 
     if (isFirstLoad.current) {
-      messagesEndRef.current?.scrollIntoView({ behavior: "instant" });
+      messageRef.current?.scrollIntoView({ behavior: "instant" });
       isFirstLoad.current = false;
     } else {
       const isNearBottom =
         list.scrollHeight - list.scrollTop - list.clientHeight < 200;
       if (isNearBottom) {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        messageRef.current?.scrollIntoView({ behavior: "smooth" });
       }
     }
   }, [messages.length]);
@@ -298,7 +298,7 @@ const ChatWindow = ({ conversation }) => {
           </div>
         )}
 
-        <div ref={messagesEndRef} />
+        <div ref={messageRef} />
       </div>
 
       <ChatInput
