@@ -6,6 +6,8 @@ const initialState = {
   posts: [],
   loading: false,
   error: null,
+  hasMore: true,
+  nextCursor: null,
 };
 
 export const postSlice = createSlice({
@@ -14,6 +16,18 @@ export const postSlice = createSlice({
   reducers: {
     setPosts: (state, action) => {
       state.posts = action.payload;
+    },
+    appendPosts: (state, action) => {
+      // Deduplicate by _id before appending
+      const existingIds = new Set(state.posts.map((p) => p._id));
+      const newPosts = action.payload.filter((p) => !existingIds.has(p._id));
+      state.posts = [...state.posts, ...newPosts];
+    },
+    setHasMore: (state, action) => {
+      state.hasMore = action.payload;
+    },
+    setNextCursor: (state, action) => {
+      state.nextCursor = action.payload;
     },
     setLoading: (state, action) => {
       state.loading = action.payload;
@@ -43,6 +57,9 @@ export const postSlice = createSlice({
 
 export const {
   setPosts,
+  appendPosts,
+  setHasMore,
+  setNextCursor,
   setLoading,
   setError,
   updatePostLike,
@@ -52,12 +69,20 @@ export const {
 
 export default postSlice.reducer;
 
-export const getAllPosts = () => async (dispatch) => {
+export const getAllPosts = (cursor = null) => async (dispatch) => {
   dispatch(setLoading(true));
   try {
-    const { data } = await axiosInstance.get("/post/all");
+    const params = new URLSearchParams({ limit: 10 });
+    if (cursor) params.set("cursor", cursor);
+    const { data } = await axiosInstance.get(`/post/all?${params}`);
     if (data.success) {
-      dispatch(setPosts(data.posts));
+      if (cursor) {
+        dispatch(appendPosts(data.posts));
+      } else {
+        dispatch(setPosts(data.posts));
+      }
+      dispatch(setHasMore(data.hasMore));
+      dispatch(setNextCursor(data.nextCursor));
     }
   } catch (error) {
     dispatch(setError(error.response?.data?.message || "Failed to fetch posts."));
