@@ -6,15 +6,27 @@ const FollowButton = ({ targetId, currentUser }) => {
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
 
-  // If viewing our own profile/post, we don't show the button
-  if (currentUser?._id === targetId) return null;
+  const actualTargetId = targetId?._id || targetId;
 
-  const isFollowing = currentUser?.following?.includes(targetId);
+  // If viewing our own profile/post, we don't show the button
+  if (currentUser?._id === actualTargetId) return null;
+
+  const isFollowing = currentUser?.following?.includes(actualTargetId);
 
   const handleFollow = async () => {
-    if (!targetId) return;
+    console.log("FollowButton Audit:", {
+      senderId: currentUser?._id,
+      rawTargetId: targetId,
+      actualTargetId,
+    });
+
+    if (!actualTargetId) {
+      console.warn("FollowButton: actualTargetId is missing!");
+      return;
+    }
+
     setLoading(true);
-    await dispatch(followUser(targetId));
+    await dispatch(followUser(actualTargetId));
     setLoading(false);
   };
 
