@@ -1,6 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import toast from "react-hot-toast";
 import { axiosInstance } from "../../lib/axios.js";
+import { connectSocket, disconnectSocket } from "../../lib/socket.js";
 
 const initialState = {
   user: null,
@@ -8,6 +9,7 @@ const initialState = {
   loading: false,
   error: null,
   isAuthenticated: false,
+  socket: null, // Track socket connection globally
 };
 
 export const userSlice = createSlice({
@@ -16,7 +18,7 @@ export const userSlice = createSlice({
   reducers: {
     setUser: (state, action) => {
       state.user = action.payload;
-      state.isAuthenticated = true;
+      state.isAuthenticated = !!action.payload;
     },
     setSelectedUser: (state, action) => {
       state.selectedUser = action.payload;
@@ -27,12 +29,28 @@ export const userSlice = createSlice({
     setError: (state, action) => {
       state.error = action.payload;
     },
+    setSocket: (state, action) => {
+      state.socket = action.payload;
+    },
   },
 });
 
-export const { setUser, setSelectedUser, setLoading, setError } = userSlice.actions;
+export const { setUser, setSelectedUser, setLoading, setError, setSocket } = userSlice.actions;
 
 export default userSlice.reducer;
+
+// Socket Thunks
+export const connectSocketThunk = (userId) => (dispatch) => {
+  const s = connectSocket(userId);
+  if (s) {
+    dispatch(setSocket("connected"));
+  }
+};
+
+export const disconnectSocketThunk = () => (dispatch) => {
+  disconnectSocket();
+  dispatch(setSocket(null));
+};
 
 export const registerUser = (userData, navigate) => async (dispatch) => {
   dispatch(setLoading(true));
@@ -40,12 +58,12 @@ export const registerUser = (userData, navigate) => async (dispatch) => {
     const { data } = await axiosInstance.post("/user/register", userData);
     if (data.success) {
       dispatch(setUser(data?.user));
+      dispatch(connectSocketThunk(data.user._id));
       toast.success(data?.message || "Registered successfully!");
       if (navigate) navigate("/");
     }
   } catch (error) {
     dispatch(setError(error.response?.data?.message || "Registration failed."));
-    // toast.error(error.response?.data?.message || "Registration failed.");
   } finally {
     dispatch(setLoading(false));
   }
@@ -57,12 +75,12 @@ export const loginUser = (userData, navigate) => async (dispatch) => {
     const { data } = await axiosInstance.post("/user/login", userData);
     if (data.success) {
       dispatch(setUser(data?.user));
+      dispatch(connectSocketThunk(data.user._id));
       toast.success(data?.message || "Logged in successfully!");
       if (navigate) navigate("/");
     }
   } catch (error) {
     dispatch(setError(error.response?.data?.message || "Login failed."));
-    // toast.error(error.response?.data?.message || "Login failed.");
   } finally {
     dispatch(setLoading(false));
   }
@@ -74,6 +92,7 @@ export const getCurrentUser = () => async (dispatch) => {
     const { data } = await axiosInstance.get("/user/profile");
     if (data.success) {
       dispatch(setUser(data?.user));
+      dispatch(connectSocketThunk(data.user._id));
     }
   } catch (error) {
     dispatch(
@@ -92,6 +111,7 @@ export const logoutUser = (navigate) => async (dispatch) => {
     const { data } = await axiosInstance.get("/user/logout");
     if (data.success) {
       dispatch(setUser(null));
+      dispatch(disconnectSocketThunk());
       toast.success(data?.message || "Logged out successfully!");
       if (navigate) navigate("/");
     }
