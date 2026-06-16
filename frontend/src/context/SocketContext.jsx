@@ -4,7 +4,7 @@
  */
 import { createContext, useContext, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { connectSocket, disconnectSocket, getSocket } from "@/socket/socket.js";
+import { connectSocket, disconnectSocket, getSocket } from "@/lib/socket.js";
 
 const SocketContext = createContext(null);
 
