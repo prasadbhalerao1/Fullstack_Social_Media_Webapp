@@ -10,7 +10,7 @@ const SOCKET_URL = "http://localhost:3000";
 /** @type {import("socket.io-client").Socket | null} */
 let socket = null;
 
-export const getSocket = () => {
+export const getSocket = (userId) => {
   if (!socket) {
     socket = io(SOCKET_URL, {
       withCredentials: true,
@@ -18,13 +18,19 @@ export const getSocket = () => {
       reconnection: true,
       reconnectionAttempts: 5,
       reconnectionDelay: 2000,
+      query: userId ? { userId } : {},
     });
+  } else if (userId) {
+    socket.io.opts.query = { userId };
   }
   return socket;
 };
 
-export const connectSocket = () => {
-  const s = getSocket();
+export const connectSocket = (userId) => {
+  const s = getSocket(userId);
+  if (userId) {
+    s.io.opts.query = { userId };
+  }
   if (!s.connected) s.connect();
   return s;
 };
