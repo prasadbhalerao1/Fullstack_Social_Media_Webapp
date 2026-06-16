@@ -39,6 +39,12 @@ const MessageBubble = ({ message, isOwn }) => {
   const [editText, setEditText] = useState(message.text);
   const [mediaViewer, setMediaViewer] = useState(false);
 
+  const handleOpenMedia = () => {
+    if (message.mediaUrl) {
+      setMediaViewer(true);
+    }
+  };
+
   const isDeletedForEveryone =
     message.deletedForEveryone ||
     (message.deletedFor?.length >= 2);
@@ -172,7 +178,7 @@ const MessageBubble = ({ message, isOwn }) => {
               {message.mediaUrl && (
                 <div
                   className="mb-1.5 rounded-xl overflow-hidden cursor-pointer relative"
-                  onClick={() => setMediaViewer(true)}
+                  onClick={handleOpenMedia}
                 >
                   {message.mediaType === "video" ? (
                     <div className="relative">
