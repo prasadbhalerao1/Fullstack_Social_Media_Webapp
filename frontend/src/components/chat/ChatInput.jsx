@@ -6,27 +6,31 @@
  * - Image/video attachment with preview strip
  * - Typing indicator debounce (stops emitting after 1.5s idle)
  * - Blocked state shows a banner instead of the input
+ * - Emoji picker with click-outside detection
  */
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Send, ImagePlus, X, Loader2 } from "lucide-react";
+import { Send, ImagePlus, X, Loader2, Smile } from "lucide-react";
 import { useSocket } from "@/context/SocketContext.jsx";
 import { addPendingMessage, sendMessageThunk } from "@/redux/slices/messageSlice.js";
 
 const TYPING_DEBOUNCE_MS = 1500;
+const COMMON_EMOJIS = ["😀", "😂", "❤️", "👍", "🔥", "🙌", "🎉", "😮", "😢", "😡", "✨", "🤔", "👀", "👏"];
 
 const ChatInput = ({ conversationId, receiverId, isBlocked }) => {
   const dispatch = useDispatch();
   const { socket } = useSocket();
   const { user: currentUser } = useSelector((state) => state.user);
 
-  const [text, setText] = useState("");
-  const [mediaFile, setMediaFile] = useState(null);
+  const [message, setMessage] = useState("");
+  const [files, setFiles] = useState([]);
   const [mediaPreview, setMediaPreview] = useState(null);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [sending, setSending] = useState(false);
 
   const textareaRef = useRef(null);
   const fileInputRef = useRef(null);
+  const emojiPickerRef = useRef(null);
   const typingTimeoutRef = useRef(null);
   const isTypingRef = useRef(false);
 
@@ -45,7 +49,7 @@ const ChatInput = ({ conversationId, receiverId, isBlocked }) => {
   }, [socket, conversationId, receiverId]);
 
   const handleTextChange = (e) => {
-    setText(e.target.value);
+    setMessage(e.target.value);
 
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
@@ -69,20 +73,38 @@ const ChatInput = ({ conversationId, receiverId, isBlocked }) => {
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setMediaFile(file);
+    setFiles([file]);
     setMediaPreview(URL.createObjectURL(file));
     e.target.value = "";
   };
 
   const clearMedia = () => {
-    setMediaFile(null);
+    setFiles([]);
     if (mediaPreview) URL.revokeObjectURL(mediaPreview);
     setMediaPreview(null);
   };
 
+  const handleEmojiClick = (emoji) => {
+    setMessage((prev) => prev + emoji.data);
+  };
+
+  // Click outside listener to auto-close emoji picker
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (emojiPickerRef.current && !emojiPickerRef.current.contains(e.target)) {
+        setShowEmojiPicker(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   const handleSend = async () => {
-    const trimmed = text.trim();
-    if (!trimmed && !mediaFile) return;
+    const trimmed = message.trim();
+    const hasFile = files.length > 0;
+    if (!trimmed && !hasFile) return;
     if (sending) return;
 
     clearTimeout(typingTimeoutRef.current);
@@ -103,8 +125,8 @@ const ChatInput = ({ conversationId, receiverId, isBlocked }) => {
       receiver: { _id: receiverId },
       text: trimmed,
       mediaUrl: mediaPreview,
-      mediaType: mediaFile
-        ? mediaFile.type.startsWith("video")
+      mediaType: hasFile
+        ? files[0].type.startsWith("video")
           ? "video"
           : "image"
         : null,
@@ -114,7 +136,7 @@ const ChatInput = ({ conversationId, receiverId, isBlocked }) => {
     };
 
     dispatch(addPendingMessage(optimistic));
-    setText("");
+    setMessage("");
     clearMedia();
     if (textareaRef.current) textareaRef.current.style.height = "auto";
 
@@ -124,7 +146,7 @@ const ChatInput = ({ conversationId, receiverId, isBlocked }) => {
       formData.append("conversationId", conversationId);
       formData.append("receiverId", receiverId);
       if (trimmed) formData.append("text", trimmed);
-      if (mediaFile) formData.append("media", mediaFile);
+      if (hasFile) formData.append("media", files[0]);
       formData.append("tempId", tempId);
 
       await dispatch(sendMessageThunk(formData, tempId));
@@ -142,10 +164,10 @@ const ChatInput = ({ conversationId, receiverId, isBlocked }) => {
   }
 
   return (
-    <div className="px-4 py-3 bg-neutral-950 border-t border-white/10">
+    <div className="px-4 py-3 bg-neutral-950 border-t border-white/10 relative">
       {mediaPreview && (
         <div className="relative w-20 h-20 mb-2">
-          {mediaFile?.type.startsWith("video") ? (
+          {files[0]?.type.startsWith("video") ? (
             <video
               src={mediaPreview}
               className="w-full h-full object-cover rounded-xl border border-white/10"
@@ -161,32 +183,61 @@ const ChatInput = ({ conversationId, receiverId, isBlocked }) => {
           )}
           <button
             onClick={clearMedia}
-            className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-600 flex items-center justify-center"
+            className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-600 flex items-center justify-center cursor-pointer"
           >
             <X size={10} className="text-white" />
           </button>
         </div>
       )}
 
-      <div className="flex items-end gap-2">
-        <button
-          onClick={() => fileInputRef.current?.click()}
-          className="p-2.5 rounded-full text-neutral-400 hover:text-white hover:bg-neutral-800 transition shrink-0"
-          title="Attach media"
-        >
-          <ImagePlus size={20} />
-        </button>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*,video/*"
-          className="hidden"
-          onChange={handleFileChange}
-        />
+      <div className="flex items-end gap-2 relative">
+        <div className="flex items-center shrink-0">
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="p-2.5 rounded-full text-neutral-400 hover:text-white hover:bg-neutral-800 transition cursor-pointer"
+            title="Attach media"
+          >
+            <ImagePlus size={20} />
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*,video/*"
+            className="hidden"
+            onChange={handleFileChange}
+          />
+
+          {/* Emoji Picker Trigger */}
+          <div ref={emojiPickerRef} className="relative">
+            <button
+              onClick={() => setShowEmojiPicker((v) => !v)}
+              className="p-2.5 rounded-full text-neutral-400 hover:text-white hover:bg-neutral-800 transition cursor-pointer"
+              title="Add emoji"
+            >
+              <Smile size={20} />
+            </button>
+
+            {showEmojiPicker && (
+              <div className="absolute bottom-12 left-0 bg-neutral-900 border border-white/10 rounded-2xl p-3 shadow-2xl z-50 w-64">
+                <div className="grid grid-cols-6 gap-2">
+                  {COMMON_EMOJIS.map((emoji) => (
+                    <button
+                      key={emoji}
+                      onClick={() => handleEmojiClick({ data: emoji })}
+                      className="text-xl p-1 hover:bg-neutral-800 rounded transition cursor-pointer text-center"
+                    >
+                      {emoji}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
 
         <textarea
           ref={textareaRef}
-          value={text}
+          value={message}
           onChange={handleTextChange}
           onKeyDown={handleKeyDown}
           placeholder="Message..."
@@ -197,9 +248,9 @@ const ChatInput = ({ conversationId, receiverId, isBlocked }) => {
 
         <button
           onClick={handleSend}
-          disabled={(!text.trim() && !mediaFile) || sending}
-          className={`p-2.5 rounded-full shrink-0 transition ${
-            text.trim() || mediaFile
+          disabled={(!message.trim() && files.length === 0) || sending}
+          className={`p-2.5 rounded-full shrink-0 transition cursor-pointer ${
+            message.trim() || files.length > 0
               ? "bg-blue-600 hover:bg-blue-500 text-white"
               : "bg-neutral-800 text-neutral-600 cursor-not-allowed"
           }`}
