@@ -501,23 +501,14 @@ const Stories = () => {
       </div>
     </div>
       {/* Create Story Modal */}
-      <Modal
-        openModal={isCreateStoryModal}
+      <StoryModelWrapper
+        isOpen={isCreateStoryModal}
         onClose={() => setIsCreateStoryModal(false)}
-        initialWidth="max-w-2xl"
-        initialHeight="h-auto"
-      >
-        <div className="w-full max-w-2xl">
-          <CreateMedia
-            type="story"
-            onClose={() => setIsCreateStoryModal(false)}
-            onUploadSuccess={() => {
-              setIsCreateStoryModal(false);
-              dispatch(getAllStories());
-            }}
-          />
-        </div>
-      </Modal>
+        onUploadSuccess={() => {
+          setIsCreateStoryModal(false);
+          dispatch(getAllStories());
+        }}
+      />
 
       {/* View Story Modal */}
       <Modal
@@ -810,6 +801,25 @@ const Stories = () => {
         </div>
       </Modal>
     </>
+  );
+};
+
+const StoryModelWrapper = ({ isOpen, onClose, onUploadSuccess }) => {
+  return (
+    <Modal
+      openModal={isOpen}
+      onClose={onClose}
+      initialWidth="max-w-2xl"
+      initialHeight="h-auto"
+    >
+      <div className="w-full max-w-2xl">
+        <CreateMedia
+          type="story"
+          onClose={onClose}
+          onUploadSuccess={onUploadSuccess}
+        />
+      </div>
+    </Modal>
   );
 };
 
