@@ -4,6 +4,7 @@
  */
 import { createContext, useContext, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
+import toast from "react-hot-toast";
 import { connectSocket, disconnectSocket, getSocket } from "@/lib/socket.js";
 
 const SocketContext = createContext(null);
@@ -39,6 +40,17 @@ export const SocketProvider = ({ children }) => {
       setLastSeenMap((prev) => ({ ...prev, [userId]: lastSeen }));
     };
 
+    const handleNotification = ({ message }) => {
+      toast(message, {
+        icon: "🔔",
+        style: {
+          background: "#171717",
+          color: "#fff",
+          border: "1px solid rgba(255, 255, 255, 0.1)",
+        },
+      });
+    };
+
     const handleConnect = () => {
       console.log("[Socket] Connected:", s.id);
     };
@@ -56,6 +68,7 @@ export const SocketProvider = ({ children }) => {
     s.on("connect_error", handleConnectError);
     s.on("getOnlineUsers", handleOnlineUsers);
     s.on("user_last_seen", handleLastSeen);
+    s.on("notification", handleNotification);
 
     return () => {
       s.off("connect", handleConnect);
@@ -63,6 +76,7 @@ export const SocketProvider = ({ children }) => {
       s.off("connect_error", handleConnectError);
       s.off("getOnlineUsers", handleOnlineUsers);
       s.off("user_last_seen", handleLastSeen);
+      s.off("notification", handleNotification);
     };
   }, [user]);
 

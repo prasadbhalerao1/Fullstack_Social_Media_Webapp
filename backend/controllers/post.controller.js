@@ -1,6 +1,7 @@
 import express from "express";
 import Post from "../models/post.model.js";
 import User from "../models/user.model.js";
+import { getIO } from "../socket/socket.js";
 
 export const createPost = async (req, res) => {
   try {
@@ -140,6 +141,24 @@ export const toggleLikePost = async (req, res) => {
 
     await post.save();
 
+    // Notify the post owner if the post was liked (index === -1) and it's not our own post
+    const postOwnerId = post.user.toString();
+    if (index === -1 && postOwnerId !== userId.toString()) {
+      const io = getIO();
+      if (io) {
+        const user = await User.findById(userId).select("username");
+        if (user) {
+          io.to(postOwnerId).emit("notification", {
+            type: "like",
+            senderId: userId,
+            senderName: user.username,
+            postId: post._id,
+            message: `${user.username} liked your post`,
+          });
+        }
+      }
+    }
+
     return res.status(200).json({
       success: true,
       message: index === -1 ? "Post liked" : "Post unliked",
@@ -184,6 +203,24 @@ export const addCommentToPost = async (req, res) => {
       "comment.user",
       "username profileImage",
     );
+
+    // Notify the post owner of the new comment if it's not their own post
+    const postOwnerId = post.user.toString();
+    if (postOwnerId !== userId.toString()) {
+      const io = getIO();
+      if (io) {
+        const commenter = await User.findById(userId).select("username");
+        if (commenter) {
+          io.to(postOwnerId).emit("notification", {
+            type: "comment",
+            senderId: userId,
+            senderName: commenter.username,
+            postId: post._id,
+            message: `${commenter.username} commented on your post`,
+          });
+        }
+      }
+    }
 
     return res.status(200).json({
       success: true,

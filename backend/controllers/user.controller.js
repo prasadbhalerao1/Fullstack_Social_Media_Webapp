@@ -2,6 +2,7 @@ import express from "express";
 import User from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { getIO } from "../socket/socket.js";
 
 const cookieOptions = {
   httpOnly: true,
@@ -207,6 +208,18 @@ export const toggleFollowUser = async (req, res) => {
       // Follow
       await User.findByIdAndUpdate(currentUserId, { $push: { following: targetUserId } });
       await User.findByIdAndUpdate(targetUserId, { $push: { followers: currentUserId } });
+
+      // Real-time follow notification
+      const io = getIO();
+      if (io) {
+        io.to(targetUserId).emit("notification", {
+          type: "follow",
+          senderId: currentUserId,
+          senderName: currentUser.username,
+          message: `${currentUser.username} started following you`,
+        });
+      }
+
       return res.status(200).json({ success: true, message: "User followed successfully" });
     }
   } catch (error) {
