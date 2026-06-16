@@ -1,14 +1,4 @@
-/**
- * ChatWindow — the main message view for a conversation.
- *
- * Handles:
- *  - Loading initial messages + paginating older ones on scroll up
- *  - Auto-scrolling to the bottom when new messages come in
- *    (but only if the user is already near the bottom)
- *  - All socket event subscriptions for this conversation
- *  - Emitting "messages seen" when the window is open
- *  - Block/unblock UI
- */
+// Main chat window containing the message thread, socket event handlers, and typing states.
 import { useEffect, useRef, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { ShieldOff, Shield, Loader2 } from "lucide-react";
@@ -134,7 +124,11 @@ const ChatWindow = ({ conversation }) => {
       dispatch(updateConversationLastMessage(message));
     };
 
-    const handleStatusUpdate = ({ messageIds, status, conversationId: cId }) => {
+    const handleStatusUpdate = ({
+      messageIds,
+      status,
+      conversationId: cId,
+    }) => {
       if (String(cId) === String(conversationId)) {
         dispatch(updateMessageStatus({ messageIds, status }));
       }
@@ -187,7 +181,7 @@ const ChatWindow = ({ conversation }) => {
     const confirmed = window.confirm(
       isBlockedBySender
         ? `Unblock ${otherUser?.username}?`
-        : `Block ${otherUser?.username}? They won't be able to message you.`
+        : `Block ${otherUser?.username}? They won't be able to message you.`,
     );
     if (!confirmed) return;
     await axiosInstance.post(`/message/block/${otherUser._id}`);
@@ -227,7 +221,9 @@ const ChatWindow = ({ conversation }) => {
             <div className="text-sm font-semibold text-white">
               {otherUser?.username}
             </div>
-            <div className="text-[10px] text-neutral-500">{getStatusText()}</div>
+            <div className="text-[10px] text-neutral-500">
+              {getStatusText()}
+            </div>
           </div>
         </div>
 
@@ -270,7 +266,13 @@ const ChatWindow = ({ conversation }) => {
         {!messagesLoading && messages.length === 0 && (
           <div className="flex-1 flex flex-col items-center justify-center text-center text-neutral-500 text-sm py-10">
             <div className="text-4xl mb-3">👋</div>
-            <p>Say hello to <span className="font-semibold text-white">{otherUser?.username}</span>!</p>
+            <p>
+              Say hello to{" "}
+              <span className="font-semibold text-white">
+                {otherUser?.username}
+              </span>
+              !
+            </p>
           </div>
         )}
 
@@ -287,7 +289,8 @@ const ChatWindow = ({ conversation }) => {
               key={msg._id}
               message={msg}
               isOwn={
-                String(msg.sender?._id ?? msg.sender) === String(currentUser?._id)
+                String(msg.sender?._id ?? msg.sender) ===
+                String(currentUser?._id)
               }
             />
           ))}

@@ -23,13 +23,13 @@ const messageSlice = createSlice({
 
     updateConversationLastMessage: (state, { payload: msg }) => {
       const conv = state.conversations.find(
-        (c) => c._id === msg.conversationId?.toString()
+        (c) => c._id === msg.conversationId?.toString(),
       );
       if (conv) {
         conv.lastMessage = msg;
         conv.updatedAt = msg.createdAt;
         state.conversations.sort(
-          (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)
+          (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt),
         );
       }
     },
@@ -75,7 +75,9 @@ const messageSlice = createSlice({
     },
 
     updateMessageStatus: (state, { payload: { messageIds, status } }) => {
-      const ids = Array.isArray(messageIds) ? messageIds.map(String) : [String(messageIds)];
+      const ids = Array.isArray(messageIds)
+        ? messageIds.map(String)
+        : [String(messageIds)];
       state.messages.forEach((m) => {
         if (ids.includes(String(m._id))) {
           m.status = status;
@@ -85,13 +87,17 @@ const messageSlice = createSlice({
 
     bulkUpdateMessageStatus: (state, { payload: updates }) => {
       updates.forEach(({ messageId, status }) => {
-        const msg = state.messages.find((m) => String(m._id) === String(messageId));
+        const msg = state.messages.find(
+          (m) => String(m._id) === String(messageId),
+        );
         if (msg) msg.status = status;
       });
     },
 
     updateMessageDeleted: (state, { payload: { messageId, deleteFor } }) => {
-      const msg = state.messages.find((m) => String(m._id) === String(messageId));
+      const msg = state.messages.find(
+        (m) => String(m._id) === String(messageId),
+      );
       if (!msg) return;
       if (deleteFor === "everyone") {
         msg.text = "";
@@ -103,8 +109,13 @@ const messageSlice = createSlice({
       }
     },
 
-    updateMessageEdited: (state, { payload: { messageId, text, editedAt } }) => {
-      const msg = state.messages.find((m) => String(m._id) === String(messageId));
+    updateMessageEdited: (
+      state,
+      { payload: { messageId, text, editedAt } },
+    ) => {
+      const msg = state.messages.find(
+        (m) => String(m._id) === String(messageId),
+      );
       if (msg) {
         msg.text = text;
         msg.isEdited = true;
@@ -113,7 +124,9 @@ const messageSlice = createSlice({
     },
 
     updateMessageReactions: (state, { payload: { messageId, reactions } }) => {
-      const msg = state.messages.find((m) => String(m._id) === String(messageId));
+      const msg = state.messages.find(
+        (m) => String(m._id) === String(messageId),
+      );
       if (msg) msg.reactions = reactions;
     },
 
@@ -138,14 +151,14 @@ const messageSlice = createSlice({
 
     incrementUnread: (state, { payload: conversationId }) => {
       const conv = state.conversations.find(
-        (c) => c._id === String(conversationId)
+        (c) => c._id === String(conversationId),
       );
       if (conv) conv.unreadCount = (conv.unreadCount || 0) + 1;
     },
 
     clearUnread: (state, { payload: conversationId }) => {
       const conv = state.conversations.find(
-        (c) => c._id === String(conversationId)
+        (c) => c._id === String(conversationId),
       );
       if (conv) conv.unreadCount = 0;
     },
@@ -199,16 +212,16 @@ export const fetchMessages =
       if (cursor) params.set("cursor", cursor);
 
       const { data } = await axiosInstance.get(
-        `/message/${conversationId}?${params}`
+        `/message/${conversationId}?${params}`,
       );
       if (data.success) {
         if (cursor) {
           dispatch(
-            prependMessages({ messages: data.messages, hasMore: data.hasMore })
+            prependMessages({ messages: data.messages, hasMore: data.hasMore }),
           );
         } else {
           dispatch(
-            setMessages({ messages: data.messages, hasMore: data.hasMore })
+            setMessages({ messages: data.messages, hasMore: data.hasMore }),
           );
         }
       }
@@ -221,7 +234,7 @@ export const fetchMessages =
 export const getOrCreateConversation = (userId) => async (dispatch) => {
   try {
     const { data } = await axiosInstance.post(
-      `/message/conversation/${userId}`
+      `/message/conversation/${userId}`,
     );
     if (data.success) {
       dispatch(setActiveConversation(data.conversation));
@@ -233,17 +246,16 @@ export const getOrCreateConversation = (userId) => async (dispatch) => {
   return null;
 };
 
-export const sendMessageThunk =
-  (formData, tempId) => async (dispatch) => {
-    try {
-      const { data } = await axiosInstance.post("/message/send", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      if (data.success) {
-        dispatch(confirmMessage({ tempId, message: data.message }));
-      }
-    } catch (err) {
-      toast.error(err?.response?.data?.message || "Failed to send message");
-      dispatch(updateMessageStatus({ messageIds: [tempId], status: "failed" }));
+export const sendMessageThunk = (formData, tempId) => async (dispatch) => {
+  try {
+    const { data } = await axiosInstance.post("/message/send", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    if (data.success) {
+      dispatch(confirmMessage({ tempId, message: data.message }));
     }
-  };
+  } catch (err) {
+    toast.error(err?.response?.data?.message || "Failed to send message");
+    dispatch(updateMessageStatus({ messageIds: [tempId], status: "failed" }));
+  }
+};

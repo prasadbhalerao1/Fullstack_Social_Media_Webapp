@@ -34,4 +34,3 @@ const LikeButton = ({ type, item, size = 24 }) => {
 };
 
 export default LikeButton;
-

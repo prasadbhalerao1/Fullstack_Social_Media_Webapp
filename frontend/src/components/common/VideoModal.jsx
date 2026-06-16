@@ -45,6 +45,7 @@ const VideoModal = ({
   const isOwner = currentUser?._id === currentReel?.user?._id;
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCurrentIndex(initialIndex);
     setIsPlaying(true);
   }, [initialIndex, isOpen]);
@@ -57,7 +58,9 @@ const VideoModal = ({
       if (isOpen && isPlaying) {
         const playPromise = video.play();
         if (playPromise !== undefined) {
-          playPromise.catch((err) => console.log("Video auto-play failed:", err));
+          playPromise.catch((err) =>
+            console.log("Video auto-play failed:", err),
+          );
         }
       } else {
         video.pause();
@@ -122,6 +125,7 @@ const VideoModal = ({
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, currentIndex, reels.length]);
 
   if (!isOpen || !currentReel) return null;
@@ -158,7 +162,6 @@ const VideoModal = ({
       className="md:flex-row rounded-2xl overflow-hidden border border-white/10 p-0 shadow-2xl bg-neutral-950"
     >
       <div className="flex flex-col md:flex-row w-full h-full relative select-none">
-        
         {/* Left Side: Video Content */}
         <div className="flex-1 bg-black relative flex items-center justify-center h-[50vh] md:h-full group">
           <div
@@ -178,7 +181,11 @@ const VideoModal = ({
             {showPlayIcon && (
               <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
                 <div className="bg-black/60 p-4 rounded-full text-white animate-pulse">
-                  {isPlaying ? <Play size={36} className="fill-white" /> : <Pause size={36} className="fill-white" />}
+                  {isPlaying ? (
+                    <Play size={36} className="fill-white" />
+                  ) : (
+                    <Pause size={36} className="fill-white" />
+                  )}
                 </div>
               </div>
             )}
@@ -226,7 +233,11 @@ const VideoModal = ({
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3.5 border-b border-white/10">
             <div className="flex items-center gap-3">
-              <ProfileImage user={currentReel.user} className="w-8 h-8" showOnlineStatus={false} />
+              <ProfileImage
+                user={currentReel.user}
+                className="w-8 h-8"
+                showOnlineStatus={false}
+              />
               <div className="flex flex-col">
                 <Link
                   to={`/profile/${currentReel.user?._id}`}
@@ -240,9 +251,14 @@ const VideoModal = ({
                   </span>
                 )}
               </div>
-              {!isOwner && <FollowButton targetId={currentReel.user?._id} currentUser={currentUser} />}
+              {!isOwner && (
+                <FollowButton
+                  targetId={currentReel.user?._id}
+                  currentUser={currentUser}
+                />
+              )}
             </div>
-            
+
             <div className="flex items-center gap-2">
               {isOwner && (
                 <button
@@ -268,7 +284,11 @@ const VideoModal = ({
             {/* Caption (Treat as first comment) */}
             {currentReel.caption && (
               <div className="flex gap-3">
-                <ProfileImage user={currentReel.user} className="w-8 h-8 shrink-0" showOnlineStatus={false} />
+                <ProfileImage
+                  user={currentReel.user}
+                  className="w-8 h-8 shrink-0"
+                  showOnlineStatus={false}
+                />
                 <div className="flex flex-col">
                   <span className="text-xs">
                     <Link
@@ -277,7 +297,9 @@ const VideoModal = ({
                     >
                       {currentReel.user?.username}
                     </Link>
-                    <span className="text-neutral-300 font-medium whitespace-pre-wrap">{currentReel.caption}</span>
+                    <span className="text-neutral-300 font-medium whitespace-pre-wrap">
+                      {currentReel.caption}
+                    </span>
                   </span>
                   <span className="text-[10px] text-neutral-500 mt-1 font-medium">
                     {timeAgo(currentReel.createdAt)}
@@ -287,33 +309,37 @@ const VideoModal = ({
             )}
 
             {/* Comments List */}
-            {currentReel.comment?.length > 0 ? (
-              currentReel.comment.map((c, idx) => (
-                <div key={c._id || idx} className="flex gap-3">
-                  <ProfileImage user={c.user} className="w-8 h-8 shrink-0" showOnlineStatus={false} />
-                  <div className="flex flex-col">
-                    <span className="text-xs">
-                      <Link
-                        to={`/profile/${c.user?._id}`}
-                        className="font-bold text-white hover:underline mr-2"
-                      >
-                        {c.user?.username || "user"}
-                      </Link>
-                      <span className="text-neutral-300 font-medium">{c.text}</span>
-                    </span>
-                    <span className="text-[10px] text-neutral-500 mt-1 font-medium">
-                      {timeAgo(c.createdAt)}
-                    </span>
+            {currentReel.comment?.length > 0
+              ? currentReel.comment.map((c, idx) => (
+                  <div key={c._id || idx} className="flex gap-3">
+                    <ProfileImage
+                      user={c.user}
+                      className="w-8 h-8 shrink-0"
+                      showOnlineStatus={false}
+                    />
+                    <div className="flex flex-col">
+                      <span className="text-xs">
+                        <Link
+                          to={`/profile/${c.user?._id}`}
+                          className="font-bold text-white hover:underline mr-2"
+                        >
+                          {c.user?.username || "user"}
+                        </Link>
+                        <span className="text-neutral-300 font-medium">
+                          {c.text}
+                        </span>
+                      </span>
+                      <span className="text-[10px] text-neutral-500 mt-1 font-medium">
+                        {timeAgo(c.createdAt)}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              ))
-            ) : (
-              !currentReel.caption && (
-                <div className="text-center text-neutral-500 text-xs py-12">
-                  No comments yet.
-                </div>
-              )
-            )}
+                ))
+              : !currentReel.caption && (
+                  <div className="text-center text-neutral-500 text-xs py-12">
+                    No comments yet.
+                  </div>
+                )}
           </div>
 
           {/* Reactions Footer */}
@@ -326,10 +352,14 @@ const VideoModal = ({
               >
                 <Heart
                   size={20}
-                  className={isLiked ? "fill-red-500 text-red-500" : "text-white"}
+                  className={
+                    isLiked ? "fill-red-500 text-red-500" : "text-white"
+                  }
                   strokeWidth={2}
                 />
-                <span className="text-xs font-semibold">{currentReel.likes?.length || 0}</span>
+                <span className="text-xs font-semibold">
+                  {currentReel.likes?.length || 0}
+                </span>
               </button>
 
               {/* Comments Icon Indicator */}

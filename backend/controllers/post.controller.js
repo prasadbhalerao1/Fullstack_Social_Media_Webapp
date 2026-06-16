@@ -1,7 +1,10 @@
-import express from "express";
 import Post from "../models/post.model.js";
 import User from "../models/user.model.js";
 import { getIO } from "../socket/socket.js";
+import {
+  toggleLikeHelper,
+  addCommentHelper,
+} from "../utils/controller.helpers.js";
 
 export const createPost = async (req, res) => {
   try {
@@ -22,8 +25,8 @@ export const createPost = async (req, res) => {
       caption,
     });
 
-    const user = await User.findById(userId)
-    if (user){
+    const user = await User.findById(userId);
+    if (user) {
       user.posts.push(post?._id);
       await user.save();
     }
@@ -108,6 +111,10 @@ export const deletePostsById = async (req, res) => {
 
     await post.deleteOne();
 
+    // Clean up user array and other users' savedPosts references
+    await User.findByIdAndUpdate(userId, { $pull: { posts: post._id } });
+    await User.updateMany({}, { $pull: { savedPosts: post._id } });
+
     return res.status(200).json({
       success: true,
       message: "Post deleted successfully",
@@ -123,27 +130,19 @@ export const deletePostsById = async (req, res) => {
 
 export const toggleLikePost = async (req, res) => {
   try {
-    const post = await Post.findById(req.params.id);
     const userId = req.user._id;
+    const postId = req.params.id;
 
-    if (!post) {
+    const result = await toggleLikeHelper(Post, postId, userId);
+    if (!result.success) {
       return res
-        .status(404)
-        .json({ success: false, message: "Post not found" });
+        .status(result.statusCode)
+        .json({ success: false, message: result.message });
     }
 
-    const index = post.likes.indexOf(userId);
-    if (index === -1) {
-      post.likes.push(userId);
-    } else {
-      post.likes.splice(index, 1);
-    }
-
-    await post.save();
-
-    // Notify the post owner if the post was liked (index === -1) and it's not our own post
-    const postOwnerId = post.user.toString();
-    if (index === -1 && postOwnerId !== userId.toString()) {
+    // Notify the post owner if the post was liked and it's not our own post
+    const postOwnerId = result.doc.user.toString();
+    if (result.isLiked && postOwnerId !== userId.toString()) {
       const io = getIO();
       if (io) {
         const user = await User.findById(userId).select("username");
@@ -152,7 +151,7 @@ export const toggleLikePost = async (req, res) => {
             type: "like",
             senderId: userId,
             senderName: user.username,
-            postId: post._id,
+            postId: result.doc._id,
             message: `${user.username} liked your post`,
           });
         }
@@ -161,8 +160,8 @@ export const toggleLikePost = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: index === -1 ? "Post liked" : "Post unliked",
-      post: post.likes,
+      message: result.message,
+      post: result.likes,
     });
   } catch (error) {
     return res.status(500).json({
@@ -174,38 +173,19 @@ export const toggleLikePost = async (req, res) => {
 
 export const addCommentToPost = async (req, res) => {
   try {
-    const post = await Post.findById(req.params.id);
     const userId = req.user._id;
-
-    if (!post) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Post not found" });
-    }
-
+    const postId = req.params.id;
     const { text } = req.body || {};
-    if (!text) {
+
+    const result = await addCommentHelper(Post, postId, userId, text);
+    if (!result.success) {
       return res
-        .status(400)
-        .json({ success: false, message: "Comment text is required" });
+        .status(result.statusCode)
+        .json({ success: false, message: result.message });
     }
-
-    const comment = {
-      user: userId,
-      text,
-      createdAt: new Date(),
-    };
-
-    post.comment.push(comment);
-    await post.save();
-
-    const updatedPost = await Post.findById(post._id).populate(
-      "comment.user",
-      "username profileImage",
-    );
 
     // Notify the post owner of the new comment if it's not their own post
-    const postOwnerId = post.user.toString();
+    const postOwnerId = result.doc.user.toString();
     if (postOwnerId !== userId.toString()) {
       const io = getIO();
       if (io) {
@@ -215,7 +195,7 @@ export const addCommentToPost = async (req, res) => {
             type: "comment",
             senderId: userId,
             senderName: commenter.username,
-            postId: post._id,
+            postId: result.doc._id,
             message: `${commenter.username} commented on your post`,
           });
         }
@@ -224,8 +204,8 @@ export const addCommentToPost = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: "Comment added successfully",
-      comment: updatedPost.comment,
+      message: result.message,
+      comment: result.comments,
     });
   } catch (error) {
     return res.status(500).json({
@@ -264,7 +244,10 @@ export const toggleSavePost = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: index === -1 ? "Post saved to bookmarks" : "Post removed from bookmarks",
+      message:
+        index === -1
+          ? "Post saved to bookmarks"
+          : "Post removed from bookmarks",
       savedPosts: user.savedPosts,
     });
   } catch (error) {
@@ -274,5 +257,3 @@ export const toggleSavePost = async (req, res) => {
     });
   }
 };
-
-

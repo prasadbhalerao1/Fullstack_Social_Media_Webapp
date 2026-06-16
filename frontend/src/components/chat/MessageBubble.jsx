@@ -1,37 +1,31 @@
-/**
- * MessageBubble — a single chat message.
- *
- * Features:
- *  - Alignment: right = sent by me, left = received
- *  - WhatsApp tick system: ✓ sent | ✓✓ grey delivered | ✓✓ blue read
- *  - Image/video thumbnail with click-to-fullscreen
- *  - Emoji reactions (grouped by emoji with count)
- *  - Hover actions: react, edit (own only), delete (own only)
- *  - Edit in-place (inline form, Escape to cancel)
- *  - "Deleted for everyone" ghost state
- *  - "Edited" label next to timestamp
- */
+// Renders a single chat message bubble with ticks, media, reactions, and edit/delete options
 import { useState, useRef, useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { Check, CheckCheck, Pencil, Trash2, Smile, Play } from "lucide-react";
 import { useSocket } from "@/context/SocketContext.jsx";
-import { updateMessageDeleted, updateMessageEdited } from "@/redux/slices/messageSlice.js";
+import {
+  updateMessageDeleted,
+  updateMessageEdited,
+} from "@/redux/slices/messageSlice.js";
 import MediaViewerModal from "./MediaViewerModal.jsx";
 
 const REACTION_EMOJIS = ["❤️", "😂", "😮", "😢", "😡", "👍"];
 
 const Ticks = ({ status }) => {
-  if (status === "pending") return <Check size={12} className="text-neutral-500" />;
-  if (status === "sent") return <Check size={12} className="text-neutral-400" />;
-  if (status === "delivered") return <CheckCheck size={12} className="text-neutral-400" />;
-  if (status === "read") return <CheckCheck size={12} className="text-blue-400" />;
+  if (status === "pending")
+    return <Check size={12} className="text-neutral-500" />;
+  if (status === "sent")
+    return <Check size={12} className="text-neutral-400" />;
+  if (status === "delivered")
+    return <CheckCheck size={12} className="text-neutral-400" />;
+  if (status === "read")
+    return <CheckCheck size={12} className="text-blue-400" />;
   return null;
 };
 
 const MessageBubble = ({ message, isOwn }) => {
   const dispatch = useDispatch();
   const { socket } = useSocket();
-  const { user: currentUser } = useSelector((state) => state.user);
 
   const [showActions, setShowActions] = useState(false);
   const [showEmojis, setShowEmojis] = useState(false);
@@ -63,8 +57,7 @@ const MessageBubble = ({ message, isOwn }) => {
   };
 
   const isDeletedForEveryone =
-    message.deletedForEveryone ||
-    (message.deletedFor?.length >= 2);
+    message.deletedForEveryone || message.deletedFor?.length >= 2;
 
   if (message.deletedForMe) return null;
 
@@ -80,7 +73,13 @@ const MessageBubble = ({ message, isOwn }) => {
       return;
     }
     socket?.emit("edit_message", { messageId: message._id, text: editText });
-    dispatch(updateMessageEdited({ messageId: message._id, text: editText, editedAt: new Date() }));
+    dispatch(
+      updateMessageEdited({
+        messageId: message._id,
+        text: editText,
+        editedAt: new Date(),
+      }),
+    );
     setEditMode(false);
   };
 
@@ -99,7 +98,10 @@ const MessageBubble = ({ message, isOwn }) => {
     <div
       className={`flex flex-col gap-0.5 max-w-[70%] ${isOwn ? "self-end items-end" : "self-start items-start"}`}
       onMouseEnter={() => setShowActions(true)}
-      onMouseLeave={() => { setShowActions(false); setShowEmojis(false); }}
+      onMouseLeave={() => {
+        setShowActions(false);
+        setShowEmojis(false);
+      }}
     >
       <div className="relative group">
         {/* Action buttons shown on hover */}
@@ -198,7 +200,10 @@ const MessageBubble = ({ message, isOwn }) => {
                 className="bg-transparent border-b border-white/30 outline-none text-sm flex-1 min-w-0"
                 onKeyDown={(e) => e.key === "Escape" && setEditMode(false)}
               />
-              <button type="submit" className="text-xs text-green-400 font-semibold shrink-0">
+              <button
+                type="submit"
+                className="text-xs text-green-400 font-semibold shrink-0"
+              >
                 Save
               </button>
             </form>
@@ -233,13 +238,17 @@ const MessageBubble = ({ message, isOwn }) => {
               )}
 
               {message.text && (
-                <p className="break-words whitespace-pre-wrap">{message.text}</p>
+                <p className="break-words whitespace-pre-wrap">
+                  {message.text}
+                </p>
               )}
             </>
           )}
         </div>
 
-        <div className={`flex items-center gap-1 mt-0.5 ${isOwn ? "justify-end" : "justify-start"}`}>
+        <div
+          className={`flex items-center gap-1 mt-0.5 ${isOwn ? "justify-end" : "justify-start"}`}
+        >
           {message.isEdited && (
             <span className="text-[10px] text-neutral-500 italic">edited</span>
           )}
@@ -250,19 +259,24 @@ const MessageBubble = ({ message, isOwn }) => {
 
       {/* Reactions grouped by emoji */}
       {message.reactions?.length > 0 && (
-        <div className={`flex flex-wrap gap-0.5 mt-0.5 ${isOwn ? "justify-end" : "justify-start"}`}>
+        <div
+          className={`flex flex-wrap gap-0.5 mt-0.5 ${isOwn ? "justify-end" : "justify-start"}`}
+        >
           {Object.entries(
             message.reactions.reduce((acc, r) => {
               acc[r.emoji] = (acc[r.emoji] || 0) + 1;
               return acc;
-            }, {})
+            }, {}),
           ).map(([emoji, count]) => (
             <button
               key={emoji}
               onClick={() => handleReact(emoji)}
               className="flex items-center gap-0.5 bg-neutral-800 border border-white/10 rounded-full px-1.5 py-0.5 text-xs hover:bg-neutral-700 transition"
             >
-              {emoji} {count > 1 && <span className="text-neutral-400 text-[10px]">{count}</span>}
+              {emoji}{" "}
+              {count > 1 && (
+                <span className="text-neutral-400 text-[10px]">{count}</span>
+              )}
             </button>
           ))}
         </div>

@@ -1,7 +1,9 @@
 import { useState, useRef, useEffect } from "react";
+import { useDispatch } from "react-redux";
 import { Link } from "react-router-dom";
-import { Heart, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import Modal from "@/components/common/Modal.jsx";
+import { deletePostById } from "@/redux/slices/postSlice.js";
 import ProfileImage from "@/components/common/ProfileImage.jsx";
 import FollowButton from "@/components/common/FollowButton.jsx";
 import MediaIcons from "@/components/common/MediaIcons.jsx";
@@ -10,19 +12,24 @@ import Media from "@/components/common/Media.jsx";
 import CommentSection from "@/components/common/CommentSection.jsx";
 import { timeAgo } from "@/lib/timeAgo.js";
 
-const PostDetailsModal = ({
-  post,
-  currentUser,
-  isOpen,
-  onClose,
-  onDelete,
-}) => {
+const PostDetailsModal = ({ post, currentUser, isOpen, onClose, onDelete }) => {
+  const dispatch = useDispatch();
   const videoRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(true);
   const [showPlayIcon, setShowPlayIcon] = useState(false);
 
   const isOwner = currentUser?._id === post?.user?._id;
+
+  const handleDelete = () => {
+    if (window.confirm("Are you sure you want to delete this post?")) {
+      dispatch(deletePostById(post?._id));
+      if (onDelete) {
+        onDelete(post?._id);
+      }
+      onClose();
+    }
+  };
 
   // Play/Pause Video Click
   const handleVideoClick = () => {
@@ -72,6 +79,7 @@ const PostDetailsModal = ({
         }
       } else {
         videoRef.current.pause();
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setIsPlaying(false);
       }
     }
@@ -106,21 +114,27 @@ const PostDetailsModal = ({
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
             <div className="flex items-center gap-3">
-              <ProfileImage user={post?.user} className="w-8 h-8" showOnlineStatus={false} />
+              <ProfileImage
+                user={post?.user}
+                className="w-8 h-8"
+                showOnlineStatus={false}
+              />
               <Link
                 to={`/profile/${post?.user?._id}`}
                 className="font-semibold text-sm text-white hover:underline"
               >
                 {post?.user?.username}
               </Link>
-              {!isOwner && <FollowButton targetId={post?.user?._id} currentUser={currentUser} />}
+              {!isOwner && (
+                <FollowButton
+                  targetId={post?.user?._id}
+                  currentUser={currentUser}
+                />
+              )}
             </div>
             {isOwner && (
               <button
-                onClick={() => {
-                  onDelete();
-                  onClose();
-                }}
+                onClick={handleDelete}
                 className="p-1 text-neutral-500 hover:text-red-500 transition cursor-pointer"
               >
                 <Trash2 size={16} />
@@ -133,7 +147,11 @@ const PostDetailsModal = ({
             {/* Caption (Treat as first comment) */}
             {post?.caption && (
               <div className="flex gap-3">
-                <ProfileImage user={post?.user} className="w-8 h-8 shrink-0" showOnlineStatus={false} />
+                <ProfileImage
+                  user={post?.user}
+                  className="w-8 h-8 shrink-0"
+                  showOnlineStatus={false}
+                />
                 <div className="flex flex-col">
                   <span className="text-sm">
                     <Link
@@ -142,7 +160,9 @@ const PostDetailsModal = ({
                     >
                       {post?.user?.username}
                     </Link>
-                    <span className="text-white font-[100]">{post.caption}</span>
+                    <span className="text-white font-[100]">
+                      {post.caption}
+                    </span>
                   </span>
                   <span className="text-xs text-neutral-500 mt-1">
                     {timeAgo(post?.createdAt)}
@@ -164,12 +184,15 @@ const PostDetailsModal = ({
               type="post"
               item={post}
               size={24}
-              handleOpenModal={() => document.getElementById(`comment-input-${post._id}`)?.focus()}
+              handleOpenModal={() =>
+                document.getElementById(`comment-input-${post._id}`)?.focus()
+              }
             />
             <div className="px-4 pb-3 flex flex-col gap-1">
               {post?.likes?.length > 0 && (
                 <div className="font-semibold text-sm text-white">
-                  {post.likes.length} {post.likes.length === 1 ? "like" : "likes"}
+                  {post.likes.length}{" "}
+                  {post.likes.length === 1 ? "like" : "likes"}
                 </div>
               )}
               <span className="text-[10px] text-neutral-500 uppercase font-medium">

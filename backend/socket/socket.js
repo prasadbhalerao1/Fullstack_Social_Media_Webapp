@@ -1,12 +1,4 @@
-/**
- * Socket.IO server — the real-time backbone of the messaging system.
- *
- * How it works:
- *   - Each connected user joins a personal room using their userId
- *   - Messages go through HTTP for persistence, socket for instant delivery
- *   - Status flow: sent → delivered (recipient online) → read (recipient opens chat)
- *   - onlineUsers is a Map of userId → Set<socketId> to support multi-tab users
- */
+// Socket server for real-time messaging, delivery status, and online presence
 
 import { Server } from "socket.io";
 import jwt from "jsonwebtoken";
@@ -16,7 +8,7 @@ import Message from "../models/message.model.js";
 /** @type {Server} */
 let io;
 
-/** userId → Set of socketIds (handles multiple tabs/devices per user) */
+// Map to track active socket IDs per user (handles multiple tabs)
 const onlineUsers = new Map();
 
 const getOnlineUsersMap = () => {
@@ -36,13 +28,17 @@ const parseCookieToken = (cookieHeader = "") => {
 };
 
 export const initSocket = (httpServer) => {
-  io = new Server(httpServer, {
-    cors: {
-      origin: [
+  const allowedOrigins = process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(",")
+    : [
         "http://localhost:5173",
         "http://localhost:5174",
         "http://localhost:5175",
-      ],
+      ];
+
+  io = new Server(httpServer, {
+    cors: {
+      origin: allowedOrigins,
       credentials: true,
     },
     connectionStateRecovery: {
@@ -50,7 +46,7 @@ export const initSocket = (httpServer) => {
     },
   });
 
-  // Verify JWT and userId query parameter on every socket handshake
+  // Authenticate socket connections using JWT
   io.use(async (socket, next) => {
     try {
       const userId = socket.handshake.query.userId;
@@ -89,7 +85,7 @@ export const initSocket = (httpServer) => {
     // Personal room for targeted messages
     socket.join(userId);
 
-    // null lastSeen = "online now"
+    // Clear lastSeen timestamp to mark user as online
     await User.findByIdAndUpdate(userId, { lastSeen: null });
 
     broadcastOnlineUsers();
@@ -97,7 +93,7 @@ export const initSocket = (httpServer) => {
     // Deliver messages that arrived while user was offline
     await deliverPendingMessages(userId);
 
-    // Join/leave conversation rooms so we can target specific chats
+    // Rooms to target specific chats
     socket.on("join_conversation", ({ conversationId }) => {
       if (conversationId) socket.join(`conv_${conversationId}`);
     });
@@ -140,7 +136,7 @@ export const initSocket = (httpServer) => {
 
         await Message.updateMany(
           { _id: { $in: messageIds } },
-          { status: "read" }
+          { status: "read" },
         );
 
         // Tell each sender their messages were read
@@ -164,7 +160,8 @@ export const initSocket = (httpServer) => {
         if (!msg) return;
 
         // Only the sender can delete for everyone
-        if (deleteFor === "everyone" && msg.sender.toString() !== userId) return;
+        if (deleteFor === "everyone" && msg.sender.toString() !== userId)
+          return;
 
         if (deleteFor === "everyone") {
           msg.text = "";
@@ -229,7 +226,7 @@ export const initSocket = (httpServer) => {
         if (!msg) return;
 
         const idx = msg.reactions.findIndex(
-          (r) => r.user.toString() === userId
+          (r) => r.user.toString() === userId,
         );
 
         if (idx !== -1) {
@@ -293,7 +290,7 @@ const broadcastOnlineUsers = () => {
   io.emit("getOnlineUsers", getOnlineUsersMap());
 };
 
-// When a user comes back online, upgrade their pending "sent" messages to "delivered"
+// Update pending "sent" messages to "delivered" when user reconnects
 const deliverPendingMessages = async (userId) => {
   try {
     const msgs = await Message.find({

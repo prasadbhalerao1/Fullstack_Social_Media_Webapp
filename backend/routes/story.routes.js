@@ -7,7 +7,7 @@ import {
   deleteStoriesById,
   getAllStories,
   toggleLikeStory,
-  viewStory
+  viewStory,
 } from "../controllers/story.controller.js";
 
 const router = Router();

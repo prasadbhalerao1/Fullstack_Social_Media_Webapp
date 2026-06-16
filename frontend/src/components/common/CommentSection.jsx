@@ -2,14 +2,24 @@ import { Link } from "react-router-dom";
 import ProfileImage from "@/components/common/ProfileImage.jsx";
 import { timeAgo } from "@/lib/timeAgo.js";
 
-const CommentSection = ({ comments = [], fallbackText = "No comments yet." }) => {
+const CommentSection = ({
+  comments = [],
+  fallbackText = "No comments yet.",
+}) => {
   return (
     <div className="flex-1 flex flex-col min-h-0 overflow-y-auto scrollbar-hide">
       {comments.length > 0 ? (
         <div className="flex flex-col gap-4">
           {comments.map((c, idx) => (
-            <div key={c._id || idx} className="flex items-center gap-3 mb-1 w-full text-white">
-              <ProfileImage user={c.user} className="w-8 h-8 shrink-0" showOnlineStatus={false} />
+            <div
+              key={c._id || idx}
+              className="flex items-center gap-3 mb-1 w-full text-white"
+            >
+              <ProfileImage
+                user={c.user}
+                className="w-8 h-8 shrink-0"
+                showOnlineStatus={false}
+              />
               <div className="flex flex-col min-h-0 min-w-0">
                 <span className="text-sm break-words">
                   <Link

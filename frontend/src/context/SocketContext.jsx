@@ -1,11 +1,9 @@
-/**
- * SocketContext — connects the socket when a user is logged in,
- * disconnects on logout, and exposes online users + last seen info.
- */
+/* eslint-disable react-refresh/only-export-components */
+// Context to manage socket connections, online status, and last seen updates
 import { createContext, useContext, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import toast from "react-hot-toast";
-import { connectSocket, disconnectSocket, getSocket } from "@/lib/socket.js";
+import { connectSocket, disconnectSocket } from "@/lib/socket.js";
 
 const SocketContext = createContext(null);
 
@@ -24,6 +22,7 @@ export const SocketProvider = ({ children }) => {
   useEffect(() => {
     if (!user) {
       disconnectSocket();
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSocket(null);
       return;
     }
@@ -32,7 +31,9 @@ export const SocketProvider = ({ children }) => {
     setSocket(s);
 
     const handleOnlineUsers = (usersMap) => {
-      const userIds = Array.isArray(usersMap) ? usersMap : Object.keys(usersMap);
+      const userIds = Array.isArray(usersMap)
+        ? usersMap
+        : Object.keys(usersMap);
       setOnlineUsers(userIds);
     };
 
@@ -83,7 +84,9 @@ export const SocketProvider = ({ children }) => {
   const isOnline = (userId) => onlineUsers.includes(userId?.toString());
 
   return (
-    <SocketContext.Provider value={{ socket, onlineUsers, lastSeenMap, isOnline }}>
+    <SocketContext.Provider
+      value={{ socket, onlineUsers, lastSeenMap, isOnline }}
+    >
       {children}
     </SocketContext.Provider>
   );

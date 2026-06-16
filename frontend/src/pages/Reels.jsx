@@ -1,20 +1,35 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
-import { Plus, Loader2, Heart, MessageCircle, VolumeX, Volume2, Play, Pause } from "lucide-react";
+import {
+  Plus,
+  Loader2,
+  Heart,
+  MessageCircle,
+  VolumeX,
+  Volume2,
+  Play,
+  Pause,
+} from "lucide-react";
 import Sidebar from "@/components/layout/Sidebar.jsx";
 import ProfileImage from "@/components/common/ProfileImage.jsx";
 import FollowButton from "@/components/common/FollowButton.jsx";
 import Modal from "@/components/common/Modal.jsx";
 import CreateMedia from "@/components/media/CreateMedia.jsx";
 import VideoModal from "@/components/common/VideoModal.jsx";
-import { getAllReels, toggleLikeReel, setIsMutedGlobal } from "@/redux/slices/reelsSlice.js";
+import {
+  getAllReels,
+  toggleLikeReel,
+  setIsMutedGlobal,
+} from "@/redux/slices/reelsSlice.js";
 import useInfiniteScroll from "@/hooks/useInfiniteScroll.js";
 
 const Reels = () => {
   const dispatch = useDispatch();
   const { user: currentUser } = useSelector((state) => state.user);
-  const { reels, loading, isMutedGlobal, hasMore, nextCursor } = useSelector((state) => state.reels);
+  const { reels, loading, isMutedGlobal, hasMore, nextCursor } = useSelector(
+    (state) => state.reels,
+  );
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [activeReelIndex, setActiveReelIndex] = useState(null);
@@ -44,7 +59,6 @@ const Reels = () => {
     <div className="bg-black/95 flex text-white min-h-screen">
       <Sidebar />
       <main className="flex-1 w-full max-w-2xl mx-auto px-4 py-8 flex flex-col gap-6 items-center overflow-y-auto no-scrollbar font-sans select-none h-screen">
-        
         {/* Header */}
         <div className="w-full max-w-md flex justify-between items-center border-b border-white/10 pb-4">
           <h1 className="text-xl font-bold tracking-wide">Reels</h1>
@@ -139,7 +153,6 @@ const Reels = () => {
 /* Internal Reel Card Component to manage individual card playing states & IntersectionObserver */
 const ReelCard = ({
   reel,
-  index,
   currentUser,
   isMutedGlobal,
   onMuteToggle,
@@ -167,7 +180,7 @@ const ReelCard = ({
       },
       {
         threshold: 0.6, // must be 60% visible to autoplay
-      }
+      },
     );
 
     const currentContainer = containerRef.current;
@@ -224,7 +237,11 @@ const ReelCard = ({
       {showPlayIcon && (
         <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none transition-opacity duration-300">
           <div className="bg-black/55 p-3 rounded-full text-white animate-pulse">
-            {isPlaying ? <Play size={28} className="fill-white" /> : <Pause size={28} className="fill-white" />}
+            {isPlaying ? (
+              <Play size={28} className="fill-white" />
+            ) : (
+              <Pause size={28} className="fill-white" />
+            )}
           </div>
         </div>
       )}
@@ -232,7 +249,11 @@ const ReelCard = ({
       {/* Top overlay details (Owner & Follow) */}
       <div className="absolute top-4 left-4 right-4 z-20 flex justify-between items-center bg-linear-to-b from-black/50 to-transparent pb-6 rounded-t-3xl pointer-events-none">
         <div className="flex items-center gap-2 pointer-events-auto">
-          <ProfileImage user={reel.user} className="w-8 h-8" showOnlineStatus={false} />
+          <ProfileImage
+            user={reel.user}
+            className="w-8 h-8"
+            showOnlineStatus={false}
+          />
           <Link
             to={`/profile/${reel.user?._id}`}
             className="font-bold text-xs text-white hover:underline tracking-wide shadow-sm"
@@ -262,7 +283,6 @@ const ReelCard = ({
 
       {/* Right side floating controls */}
       <div className="absolute right-3 bottom-6 z-20 flex flex-col gap-5 items-center bg-black/30 backdrop-blur-xs py-3 px-2 rounded-full border border-white/5">
-        
         {/* Like */}
         <button
           onClick={onLikeToggle}

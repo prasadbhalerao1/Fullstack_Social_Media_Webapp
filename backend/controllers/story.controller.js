@@ -1,4 +1,9 @@
 import Story from "../models/story.model.js";
+import User from "../models/user.model.js";
+import {
+  toggleLikeHelper,
+  addCommentHelper,
+} from "../utils/controller.helpers.js";
 
 export const createStory = async (req, res) => {
   try {
@@ -17,6 +22,8 @@ export const createStory = async (req, res) => {
       mediaType,
       mediaUrl,
     });
+
+    await User.findByIdAndUpdate(userId, { $push: { story: story._id } });
 
     return res.status(201).json({
       success: true,
@@ -133,28 +140,20 @@ export const viewStory = async (req, res) => {
 
 export const toggleLikeStory = async (req, res) => {
   try {
-    const story = await Story.findById(req.params.id);
     const userId = req.user._id;
+    const storyId = req.params.id;
 
-    if (!story) {
+    const result = await toggleLikeHelper(Story, storyId, userId);
+    if (!result.success) {
       return res
-        .status(404)
-        .json({ success: false, message: "Story not found" });
+        .status(result.statusCode)
+        .json({ success: false, message: result.message });
     }
-
-    const index = story.likes.indexOf(userId);
-    if (index === -1) {
-      story.likes.push(userId);
-    } else {
-      story.likes.splice(index, 1);
-    }
-
-    await story.save();
 
     return res.status(200).json({
       success: true,
-      message: index === -1 ? "Story liked" : "Story unliked",
-      story: story.likes,
+      message: result.message,
+      story: result.likes,
     });
   } catch (error) {
     return res.status(500).json({
@@ -166,40 +165,21 @@ export const toggleLikeStory = async (req, res) => {
 
 export const addCommentToStory = async (req, res) => {
   try {
-    const story = await Story.findById(req.params.id);
     const userId = req.user._id;
-
-    if (!story) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Story not found" });
-    }
-
+    const storyId = req.params.id;
     const { text } = req.body || {};
-    if (!text) {
+
+    const result = await addCommentHelper(Story, storyId, userId, text);
+    if (!result.success) {
       return res
-        .status(400)
-        .json({ success: false, message: "Comment text is required" });
+        .status(result.statusCode)
+        .json({ success: false, message: result.message });
     }
-
-    const comment = {
-      user: userId,
-      text,
-      createdAt: new Date(),
-    };
-
-    story.comment.push(comment);
-    await story.save();
-
-    const updatedStory = await Story.findById(story._id).populate(
-      "comment.user",
-      "username profileImage",
-    );
 
     return res.status(200).json({
       success: true,
-      message: "Comment added successfully",
-      comment: updatedStory.comment,
+      message: result.message,
+      comment: result.comments,
     });
   } catch (error) {
     return res.status(500).json({
@@ -221,6 +201,8 @@ export const deleteStoriesById = async (req, res) => {
     }
 
     await story.deleteOne();
+
+    await User.findByIdAndUpdate(userId, { $pull: { story: story._id } });
 
     return res.status(200).json({
       success: true,

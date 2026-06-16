@@ -1,11 +1,4 @@
-/**
- * Message page — full DM chat layout.
- *
- * Layout:
- *   <Sidebar />  ← app nav
- *   <aside>      ← conversation list (collapsible: w-12 icon-only | w-80 full)
- *   <main>       ← chat window or empty state
- */
+// Message page layout with sidebar, conversation list, and main chat window.
 import { useState } from "react";
 import { useSelector } from "react-redux";
 import { MessageSquare, ChevronLeft, ChevronRight } from "lucide-react";

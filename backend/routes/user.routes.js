@@ -6,7 +6,6 @@ import {
   profileUser,
   allUsers,
   uploadProfileImage,
-  toggleFollowUser,
   getProfileById,
   getSuggestedUsers,
   updateUserProfile,
@@ -40,6 +39,5 @@ router.post(
 
 router.get("/all", allUsers);
 router.get("/:id", authMiddleware, getProfileById);
-router.post("/:id/follow", authMiddleware, toggleFollowUser);
 
 export default router;

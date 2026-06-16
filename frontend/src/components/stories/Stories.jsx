@@ -16,7 +16,6 @@ import {
   Eye,
   Trash2,
 } from "lucide-react";
-import { toast } from "react-hot-toast";
 import Modal from "@/components/common/Modal.jsx";
 import CreateMedia from "@/components/media/CreateMedia.jsx";
 import ProfileImage from "@/components/common/ProfileImage.jsx";
@@ -37,7 +36,6 @@ const Stories = () => {
   // Refs
   const videoRef = useRef(null);
   const progressIntervalRef = useRef(null);
-  const commentsModalRef = useRef(null);
   const viewsModalRef = useRef(null);
   const scrollRef = useRef(null);
 
@@ -69,7 +67,9 @@ const Stories = () => {
     const slider = scrollRef.current;
     if (!slider) return;
     setShowLeftArrow(slider.scrollLeft > 5);
-    setShowRightArrow(slider.scrollLeft < slider.scrollWidth - slider.clientWidth - 5);
+    setShowRightArrow(
+      slider.scrollLeft < slider.scrollWidth - slider.clientWidth - 5,
+    );
   };
 
   useEffect(() => {
@@ -92,10 +92,16 @@ const Stories = () => {
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (isCreateStoryModal || showStoryModal || showCommentsModal) {
-        const backdropClasses = ["fixed", "absolute", "inset-0", "bg-black/60", "bg-black/80"];
-        const isBackdropClick = backdropClasses.some(cls => 
-          event.target.classList.contains(cls)
-        ) || event.target.getAttribute("role") === "dialog";
+        const backdropClasses = [
+          "fixed",
+          "absolute",
+          "inset-0",
+          "bg-black/60",
+          "bg-black/80",
+        ];
+        const isBackdropClick =
+          backdropClasses.some((cls) => event.target.classList.contains(cls)) ||
+          event.target.getAttribute("role") === "dialog";
 
         if (isBackdropClick) {
           setIsCreateStoryModal(false);
@@ -164,9 +170,10 @@ const Stories = () => {
     if (!slider) return;
     const scrollAmount = slider.clientWidth * 0.75; // scroll 75% of visible width
     slider.scrollTo({
-      left: direction === "left"
-        ? slider.scrollLeft - scrollAmount
-        : slider.scrollLeft + scrollAmount,
+      left:
+        direction === "left"
+          ? slider.scrollLeft - scrollAmount
+          : slider.scrollLeft + scrollAmount,
       behavior: "smooth",
     });
   };
@@ -437,11 +444,8 @@ const Stories = () => {
     if (!showStoryModal) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setProgress(0);
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsPlaying(true);
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setShowCommentsModal(false);
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setShowViewsModal(false);
       if (progressIntervalRef.current) {
         clearInterval(progressIntervalRef.current);
@@ -452,92 +456,92 @@ const Stories = () => {
   return (
     <>
       <div className="relative w-full group">
-      {/* Left Chevron */}
-      {showLeftArrow && (
-        <button
-          onClick={() => scrollStories("left")}
-          className="absolute left-2 top-10 z-20 bg-neutral-900/80 hover:bg-neutral-800 text-white rounded-full p-1.5 shadow-md border border-white/5 transition hover:scale-105 active:scale-95 cursor-pointer flex items-center justify-center"
-        >
-          <ArrowLeft size={14} />
-        </button>
-      )}
+        {/* Left Chevron */}
+        {showLeftArrow && (
+          <button
+            onClick={() => scrollStories("left")}
+            className="absolute left-2 top-10 z-20 bg-neutral-900/80 hover:bg-neutral-800 text-white rounded-full p-1.5 shadow-md border border-white/5 transition hover:scale-105 active:scale-95 cursor-pointer flex items-center justify-center"
+          >
+            <ArrowLeft size={14} />
+          </button>
+        )}
 
-      {/* Right Chevron */}
-      {showRightArrow && (
-        <button
-          onClick={() => scrollStories("right")}
-          className="absolute right-2 top-10 z-20 bg-neutral-900/80 hover:bg-neutral-800 text-white rounded-full p-1.5 shadow-md border border-white/5 transition hover:scale-105 active:scale-95 cursor-pointer flex items-center justify-center"
-        >
-          <ArrowRight size={14} />
-        </button>
-      )}
+        {/* Right Chevron */}
+        {showRightArrow && (
+          <button
+            onClick={() => scrollStories("right")}
+            className="absolute right-2 top-10 z-20 bg-neutral-900/80 hover:bg-neutral-800 text-white rounded-full p-1.5 shadow-md border border-white/5 transition hover:scale-105 active:scale-95 cursor-pointer flex items-center justify-center"
+          >
+            <ArrowRight size={14} />
+          </button>
+        )}
 
-      <div
-        ref={scrollRef}
-        onMouseDown={handleMouseDown}
-        onMouseLeave={handleMouseLeave}
-        onMouseUp={handleMouseUp}
-        onMouseMove={handleMouseMove}
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-        onTouchMove={handleTouchMove}
-        className="w-full flex items-center overflow-x-auto py-4 px-2 space-x-6 no-scrollbar select-none border-b border-white/5 cursor-grab active:cursor-grabbing scroll-smooth"
-      >
-        {/* Create Story Button */}
         <div
-          onClick={handleCreateStoryModal}
-          className="shrink-0 flex flex-col items-center cursor-pointer group"
+          ref={scrollRef}
+          onMouseDown={handleMouseDown}
+          onMouseLeave={handleMouseLeave}
+          onMouseUp={handleMouseUp}
+          onMouseMove={handleMouseMove}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+          onTouchMove={handleTouchMove}
+          className="w-full flex items-center overflow-x-auto py-4 px-2 space-x-6 no-scrollbar select-none border-b border-white/5 cursor-grab active:cursor-grabbing scroll-smooth"
         >
-          <div className="relative w-16 h-16 rounded-full border border-dashed border-neutral-700 hover:border-white transition-all duration-300 p-0.5 flex items-center justify-center bg-neutral-900/50">
-            <ProfileImage
-              user={currentUser}
-              className="w-full h-full"
-              showOnlineStatus={false}
-              linkable={false}
-            />
-            <div className="absolute -bottom-1 -right-1 bg-white group-hover:bg-neutral-200 rounded-full p-1 shadow-md transition">
-              <Plus size={12} className="text-black" />
-            </div>
-          </div>
-          <span className="mt-2 text-[11px] text-neutral-400 font-medium group-hover:text-white transition truncate w-16 text-center">
-            Create Story
-          </span>
-        </div>
-
-        {/* Stories List */}
-        <div className="flex space-x-6">
-          {stories?.map((userStories, index) => (
-            <div
-              key={userStories?.user?._id}
-              onClick={() => handleUserClick(index)}
-              className="flex flex-col items-center cursor-pointer shrink-0 group"
-            >
-              <div
-                className={`p-0.5 rounded-full border-2 transition-all duration-300 ${
-                  index === currentUserIndex && showStoryModal
-                    ? "border-white scale-105"
-                    : userStories.hasUnViewed
-                      ? "border-white group-hover:border-neutral-200"
-                      : "border-neutral-800 group-hover:border-neutral-600"
-                }`}
-              >
-                <ProfileImage
-                  user={userStories?.user}
-                  className="w-14 h-14"
-                  showOnlineStatus={false}
-                  linkable={false}
-                />
+          {/* Create Story Button */}
+          <div
+            onClick={handleCreateStoryModal}
+            className="shrink-0 flex flex-col items-center cursor-pointer group"
+          >
+            <div className="relative w-16 h-16 rounded-full border border-dashed border-neutral-700 hover:border-white transition-all duration-300 p-0.5 flex items-center justify-center bg-neutral-900/50">
+              <ProfileImage
+                user={currentUser}
+                className="w-full h-full"
+                showOnlineStatus={false}
+                linkable={false}
+              />
+              <div className="absolute -bottom-1 -right-1 bg-white group-hover:bg-neutral-200 rounded-full p-1 shadow-md transition">
+                <Plus size={12} className="text-black" />
               </div>
-              <span className="mt-2 text-[11px] text-neutral-400 font-medium group-hover:text-white transition truncate w-16 text-center">
-                {userStories?.user?._id === currentUser?._id
-                  ? "Your story"
-                  : userStories?.user?.username}
-              </span>
             </div>
-          ))}
+            <span className="mt-2 text-[11px] text-neutral-400 font-medium group-hover:text-white transition truncate w-16 text-center">
+              Create Story
+            </span>
+          </div>
+
+          {/* Stories List */}
+          <div className="flex space-x-6">
+            {stories?.map((userStories, index) => (
+              <div
+                key={userStories?.user?._id}
+                onClick={() => handleUserClick(index)}
+                className="flex flex-col items-center cursor-pointer shrink-0 group"
+              >
+                <div
+                  className={`p-0.5 rounded-full border-2 transition-all duration-300 ${
+                    index === currentUserIndex && showStoryModal
+                      ? "border-white scale-105"
+                      : userStories.hasUnViewed
+                        ? "border-white group-hover:border-neutral-200"
+                        : "border-neutral-800 group-hover:border-neutral-600"
+                  }`}
+                >
+                  <ProfileImage
+                    user={userStories?.user}
+                    className="w-14 h-14"
+                    showOnlineStatus={false}
+                    linkable={false}
+                  />
+                </div>
+                <span className="mt-2 text-[11px] text-neutral-400 font-medium group-hover:text-white transition truncate w-16 text-center">
+                  {userStories?.user?._id === currentUser?._id
+                    ? "Your story"
+                    : userStories?.user?.username}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
-    </div>
       {/* Create Story Modal */}
       <StoryModelWrapper
         isOpen={isCreateStoryModal}

@@ -30,7 +30,7 @@ const Sidebar = () => {
   // Total unread badge count across all conversations
   const totalUnread = conversations.reduce(
     (sum, c) => sum + (c.unreadCount || 0),
-    0
+    0,
   );
 
   const navItems = [

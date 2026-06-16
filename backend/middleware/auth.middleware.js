@@ -11,7 +11,7 @@ export const authMiddleware = async (req, res, next) => {
         .json({ success: false, message: "Unauthorized: No token found" });
     }
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findById(decoded._id);
+    const user = await User.findById(decoded._id).select("-password");
     if (!user) {
       return res
         .status(401)

@@ -2,7 +2,13 @@ import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { addCommentToPost } from "@/redux/slices/postSlice.js";
 
-const CommentForm = ({ postId, onSubmit, placeholder = "Add a comment...", inputId, className = "" }) => {
+const CommentForm = ({
+  postId,
+  onSubmit,
+  placeholder = "Add a comment...",
+  inputId,
+  className = "",
+}) => {
   const dispatch = useDispatch();
   const [commentText, setCommentText] = useState("");
 
@@ -19,7 +25,10 @@ const CommentForm = ({ postId, onSubmit, placeholder = "Add a comment...", input
   };
 
   return (
-    <form onSubmit={handleSubmit} className={`flex items-center relative w-full ${className}`}>
+    <form
+      onSubmit={handleSubmit}
+      className={`flex items-center relative w-full ${className}`}
+    >
       <input
         id={inputId}
         type="text"

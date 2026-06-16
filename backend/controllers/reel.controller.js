@@ -1,5 +1,9 @@
-import express from "express";
 import Reel from "../models/reel.model.js";
+import User from "../models/user.model.js";
+import {
+  toggleLikeHelper,
+  addCommentHelper,
+} from "../utils/controller.helpers.js";
 
 export const createReel = async (req, res) => {
   try {
@@ -18,6 +22,8 @@ export const createReel = async (req, res) => {
       mediaUrl,
       caption,
     });
+
+    await User.findByIdAndUpdate(userId, { $push: { reels: post._id } });
 
     return res.status(201).json({
       success: true,
@@ -88,28 +94,20 @@ export const getReelsById = async (req, res) => {
 
 export const toggleLikeReel = async (req, res) => {
   try {
-    const reel = await Reel.findById(req.params.id);
     const userId = req.user._id;
+    const reelId = req.params.id;
 
-    if (!reel) {
+    const result = await toggleLikeHelper(Reel, reelId, userId);
+    if (!result.success) {
       return res
-        .status(404)
-        .json({ success: false, message: "Reel not found" });
+        .status(result.statusCode)
+        .json({ success: false, message: result.message });
     }
-
-    const index = reel.likes.indexOf(userId);
-    if (index === -1) {
-      reel.likes.push(userId);
-    } else {
-      reel.likes.splice(index, 1);
-    }
-
-    await reel.save();
 
     return res.status(200).json({
       success: true,
-      message: index === -1 ? "Reel liked" : "Reel unliked",
-      reel: reel.likes,
+      message: result.message,
+      reel: result.likes,
     });
   } catch (error) {
     return res.status(500).json({
@@ -121,40 +119,21 @@ export const toggleLikeReel = async (req, res) => {
 
 export const addCommentToReel = async (req, res) => {
   try {
-    const reel = await Reel.findById(req.params.id);
     const userId = req.user._id;
-
-    if (!reel) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Reel not found" });
-    }
-
+    const reelId = req.params.id;
     const { text } = req.body || {};
-    if (!text) {
+
+    const result = await addCommentHelper(Reel, reelId, userId, text);
+    if (!result.success) {
       return res
-        .status(400)
-        .json({ success: false, message: "Comment text is required" });
+        .status(result.statusCode)
+        .json({ success: false, message: result.message });
     }
-
-    const comment = {
-      user: userId,
-      text,
-      createdAt: new Date(),
-    };
-
-    reel.comment.push(comment);
-    await reel.save();
-
-    const updatedReel = await Reel.findById(reel._id).populate(
-      "comment.user",
-      "username profileImage",
-    );
 
     return res.status(200).json({
       success: true,
-      message: "Comment added successfully",
-      comment: updatedReel.comment,
+      message: result.message,
+      comment: result.comments,
     });
   } catch (error) {
     return res.status(500).json({
@@ -176,6 +155,8 @@ export const deleteReelsById = async (req, res) => {
     }
 
     await reel.deleteOne();
+
+    await User.findByIdAndUpdate(userId, { $pull: { reels: reel._id } });
 
     return res.status(200).json({
       success: true,

@@ -1,11 +1,7 @@
-/**
- * Socket.IO singleton for the frontend.
- * Uses lazy initialization: socket is created on first connectSocket() call.
- * withCredentials=true ensures the httpOnly JWT cookie is sent with the handshake.
- */
+// Socket client setup using lazy connection initialization
 import { io } from "socket.io-client";
 
-const SOCKET_URL = "http://localhost:3000";
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "http://localhost:3000";
 
 /** @type {import("socket.io-client").Socket | null} */
 let socket = null;

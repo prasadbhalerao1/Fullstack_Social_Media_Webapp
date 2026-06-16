@@ -1,5 +1,9 @@
 import "./App.css";
-import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom";
+import {
+  createBrowserRouter,
+  RouterProvider,
+  Navigate,
+} from "react-router-dom";
 import Home from "@/pages/Home.jsx";
 import Profile from "@/pages/Profile.jsx";
 import Login from "@/pages/Login.jsx";
@@ -37,11 +41,46 @@ function App() {
   }, [dispatch]);
 
   const router = createBrowserRouter([
-    { path: "/", element: <ProtectedRoute><Home /></ProtectedRoute> },
-    { path: "/explore", element: <ProtectedRoute><Explore /></ProtectedRoute> },
-    { path: "/reels", element: <ProtectedRoute><Reels /></ProtectedRoute> },
-    { path: "/chats", element: <ProtectedRoute><Message /></ProtectedRoute> },
-    { path: "/profile/:id", element: <ProtectedRoute><Profile /></ProtectedRoute> },
+    {
+      path: "/",
+      element: (
+        <ProtectedRoute>
+          <Home />
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: "/explore",
+      element: (
+        <ProtectedRoute>
+          <Explore />
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: "/reels",
+      element: (
+        <ProtectedRoute>
+          <Reels />
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: "/chats",
+      element: (
+        <ProtectedRoute>
+          <Message />
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: "/profile/:id",
+      element: (
+        <ProtectedRoute>
+          <Profile />
+        </ProtectedRoute>
+      ),
+    },
     { path: "/login", element: <Login /> },
     { path: "/signup", element: <Login /> },
     { path: "/register", element: <Login /> },

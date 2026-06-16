@@ -73,27 +73,31 @@ export const {
 
 export default reelsSlice.reducer;
 
-export const getAllReels = (cursor = null) => async (dispatch) => {
-  dispatch(setLoading(true));
-  try {
-    const params = new URLSearchParams({ limit: 10 });
-    if (cursor) params.set("cursor", cursor);
-    const { data } = await axiosInstance.get(`/reel/all?${params}`);
-    if (data.success) {
-      if (cursor) {
-        dispatch(appendReels(data.reels));
-      } else {
-        dispatch(setReels(data.reels));
+export const getAllReels =
+  (cursor = null) =>
+  async (dispatch) => {
+    dispatch(setLoading(true));
+    try {
+      const params = new URLSearchParams({ limit: 10 });
+      if (cursor) params.set("cursor", cursor);
+      const { data } = await axiosInstance.get(`/reel/all?${params}`);
+      if (data.success) {
+        if (cursor) {
+          dispatch(appendReels(data.reels));
+        } else {
+          dispatch(setReels(data.reels));
+        }
+        dispatch(setHasMore(data.hasMore));
+        dispatch(setNextCursor(data.nextCursor));
       }
-      dispatch(setHasMore(data.hasMore));
-      dispatch(setNextCursor(data.nextCursor));
+    } catch (error) {
+      dispatch(
+        setError(error.response?.data?.message || "Failed to fetch reels."),
+      );
+    } finally {
+      dispatch(setLoading(false));
     }
-  } catch (error) {
-    dispatch(setError(error.response?.data?.message || "Failed to fetch reels."));
-  } finally {
-    dispatch(setLoading(false));
-  }
-};
+  };
 
 export const toggleLikeReel = (reelId) => async (dispatch) => {
   try {
@@ -109,13 +113,17 @@ export const toggleLikeReel = (reelId) => async (dispatch) => {
 
 export const addCommentToReel = (reelId, text) => async (dispatch) => {
   try {
-    const { data } = await axiosInstance.post(`/reel/${reelId}/comment`, { text });
+    const { data } = await axiosInstance.post(`/reel/${reelId}/comment`, {
+      text,
+    });
     if (data.success) {
       dispatch(updateReelComment({ reelId, comment: data.comment }));
     }
   } catch (error) {
     console.error("Comment reel error:", error);
-    toast.error(error.response?.data?.message || "Failed to add comment to reel");
+    toast.error(
+      error.response?.data?.message || "Failed to add comment to reel",
+    );
   }
 };
 

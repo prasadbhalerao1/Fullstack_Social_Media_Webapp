@@ -8,7 +8,7 @@ import useInfiniteScroll from "@/hooks/useInfiniteScroll.js";
 const Feed = () => {
   const dispatch = useDispatch();
   const { posts, loading, hasMore, nextCursor } = useSelector(
-    (state) => state.posts
+    (state) => state.posts,
   );
   const { user: currentUser } = useSelector((state) => state.user);
 

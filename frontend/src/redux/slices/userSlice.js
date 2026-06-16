@@ -39,7 +39,7 @@ export const userSlice = createSlice({
     },
     updateFollowState: (state, action) => {
       const { currentUserId, targetUserId } = action.payload;
-      
+
       // Update currentUser's following list
       if (state.user) {
         if (!state.user.following) state.user.following = [];
@@ -55,18 +55,20 @@ export const userSlice = createSlice({
       if (state.selectedUser && state.selectedUser._id === targetUserId) {
         if (!state.selectedUser.followers) state.selectedUser.followers = [];
         const isFollowerPresent = state.selectedUser.followers.some(
-          (f) => (f._id || f) === currentUserId
+          (f) => (f._id || f) === currentUserId,
         );
         if (isFollowerPresent) {
           state.selectedUser.followers = state.selectedUser.followers.filter(
-            (f) => (f._id || f) !== currentUserId
+            (f) => (f._id || f) !== currentUserId,
           );
         } else {
-          const currentMockUser = state.user ? {
-            _id: state.user._id,
-            username: state.user.username,
-            profileImage: state.user.profileImage
-          } : currentUserId;
+          const currentMockUser = state.user
+            ? {
+                _id: state.user._id,
+                username: state.user.username,
+                profileImage: state.user.profileImage,
+              }
+            : currentUserId;
           state.selectedUser.followers.push(currentMockUser);
         }
       }
@@ -74,7 +76,15 @@ export const userSlice = createSlice({
   },
 });
 
-export const { setUser, setSelectedUser, setLoading, setError, setSocket, setSavedPost, updateFollowState } = userSlice.actions;
+export const {
+  setUser,
+  setSelectedUser,
+  setLoading,
+  setError,
+  setSocket,
+  setSavedPost,
+  updateFollowState,
+} = userSlice.actions;
 
 export default userSlice.reducer;
 
@@ -187,10 +197,17 @@ export const followUser = (userId) => async (dispatch, getState) => {
     const isFollowing = currentUser?.following?.includes(userId);
     const endpoint = isFollowing ? "/user/unfollow" : "/user/follow";
 
-    const { data } = await axiosInstance.post(endpoint, { targetUserId: userId });
+    const { data } = await axiosInstance.post(endpoint, {
+      targetUserId: userId,
+    });
     if (data.success) {
       if (currentUser) {
-        dispatch(updateFollowState({ currentUserId: currentUser._id, targetUserId: userId }));
+        dispatch(
+          updateFollowState({
+            currentUserId: currentUser._id,
+            targetUserId: userId,
+          }),
+        );
       }
       toast.success(data.message);
     }
@@ -200,7 +217,7 @@ export const followUser = (userId) => async (dispatch, getState) => {
   }
 };
 
-export const fetchFollowers = (userId) => async (dispatch) => {
+export const fetchFollowers = (userId) => async () => {
   try {
     const { data } = await axiosInstance.get(`/user/${userId}/followers`);
     if (data.success) {
@@ -212,7 +229,7 @@ export const fetchFollowers = (userId) => async (dispatch) => {
   }
 };
 
-export const fetchFollowing = (userId) => async (dispatch) => {
+export const fetchFollowing = (userId) => async () => {
   try {
     const { data } = await axiosInstance.get(`/user/${userId}/following`);
     if (data.success) {
@@ -246,13 +263,15 @@ export const getProfileById = (userId) => async (dispatch) => {
     }
   } catch (error) {
     console.error("Get profile by id error:", error);
-    dispatch(setError(error.response?.data?.message || "Failed to fetch profile"));
+    dispatch(
+      setError(error.response?.data?.message || "Failed to fetch profile"),
+    );
   } finally {
     dispatch(setLoading(false));
   }
 };
 
-export const getSuggestedUsers = () => async (dispatch) => {
+export const getSuggestedUsers = () => async () => {
   try {
     const { data } = await axiosInstance.get("/user/suggested");
     if (data.success) {
@@ -264,20 +283,23 @@ export const getSuggestedUsers = () => async (dispatch) => {
   }
 };
 
-export const updateUserProfile = (profileData, callback) => async (dispatch) => {
-  dispatch(setLoading(true));
-  try {
-    const { data } = await axiosInstance.put("/user/update", profileData);
-    if (data.success) {
-      dispatch(setUser(data.user));
-      toast.success(data.message || "Profile updated successfully!");
-      if (callback) callback();
+export const updateUserProfile =
+  (profileData, callback) => async (dispatch) => {
+    dispatch(setLoading(true));
+    try {
+      const { data } = await axiosInstance.put("/user/update", profileData);
+      if (data.success) {
+        dispatch(setUser(data.user));
+        toast.success(data.message || "Profile updated successfully!");
+        if (callback) callback();
+      }
+    } catch (error) {
+      console.error("Update profile error:", error);
+      toast.error(error.response?.data?.message || "Failed to update profile");
+      dispatch(
+        setError(error.response?.data?.message || "Failed to update profile"),
+      );
+    } finally {
+      dispatch(setLoading(false));
     }
-  } catch (error) {
-    console.error("Update profile error:", error);
-    toast.error(error.response?.data?.message || "Failed to update profile");
-    dispatch(setError(error.response?.data?.message || "Failed to update profile"));
-  } finally {
-    dispatch(setLoading(false));
-  }
-};
+  };

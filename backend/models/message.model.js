@@ -61,7 +61,7 @@ const messageSchema = new mongoose.Schema(
       },
     ],
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // Index for paginated message history (cursor-based)

@@ -18,7 +18,9 @@ const Media = ({
   const onMuteToggle = handleMuteToggle || toggleMute;
 
   return (
-    <div className={`relative w-full bg-neutral-950 flex justify-center items-center overflow-hidden ${containerClassName}`}>
+    <div
+      className={`relative w-full bg-neutral-950 flex justify-center items-center overflow-hidden ${containerClassName}`}
+    >
       {item.mediaType === "image" ? (
         <img
           src={item.mediaUrl}
@@ -27,7 +29,10 @@ const Media = ({
           loading="lazy"
         />
       ) : (
-        <div className="relative w-full h-full cursor-pointer" onClick={handleVideoClick}>
+        <div
+          className="relative w-full h-full cursor-pointer"
+          onClick={handleVideoClick}
+        >
           <video
             ref={videoRef}
             src={item.mediaUrl}

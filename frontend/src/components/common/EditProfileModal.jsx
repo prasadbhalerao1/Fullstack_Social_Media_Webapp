@@ -12,6 +12,7 @@ const EditProfileModal = ({ isOpen, onClose, currentUser }) => {
 
   useEffect(() => {
     if (currentUser) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setUsername(currentUser.username || "");
       setBio(currentUser.bio || "");
     }
@@ -26,7 +27,7 @@ const EditProfileModal = ({ isOpen, onClose, currentUser }) => {
       updateUserProfile({ username: username.trim(), bio: bio.trim() }, () => {
         setIsSubmitting(false);
         onClose();
-      })
+      }),
     ).catch(() => {
       setIsSubmitting(false);
     });
@@ -43,7 +44,10 @@ const EditProfileModal = ({ isOpen, onClose, currentUser }) => {
       <div className="p-6 text-white bg-neutral-950 font-sans flex flex-col gap-4">
         <div className="flex justify-between items-center border-b border-white/10 pb-3">
           <h2 className="text-lg font-bold">Edit Profile</h2>
-          <button onClick={onClose} className="text-neutral-400 hover:text-white cursor-pointer">
+          <button
+            onClick={onClose}
+            className="text-neutral-400 hover:text-white cursor-pointer"
+          >
             <X size={20} />
           </button>
         </div>
@@ -51,7 +55,9 @@ const EditProfileModal = ({ isOpen, onClose, currentUser }) => {
         <form onSubmit={handleSubmit} className="flex flex-col gap-4 mt-2">
           {/* Username */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-neutral-400">Username</label>
+            <label className="text-xs font-semibold text-neutral-400">
+              Username
+            </label>
             <input
               type="text"
               value={username}
@@ -64,7 +70,9 @@ const EditProfileModal = ({ isOpen, onClose, currentUser }) => {
 
           {/* Biography */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-neutral-400">Bio</label>
+            <label className="text-xs font-semibold text-neutral-400">
+              Bio
+            </label>
             <textarea
               value={bio}
               onChange={(e) => setBio(e.target.value)}

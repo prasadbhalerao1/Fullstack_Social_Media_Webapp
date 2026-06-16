@@ -1,21 +1,18 @@
-/**
- * useInfiniteScroll — attaches an IntersectionObserver to a sentinel element.
- * When the sentinel enters the viewport, calls `onLoadMore` if `hasMore` is true.
- *
- * Usage:
- *   const sentinelRef = useInfiniteScroll({ hasMore, onLoadMore, loading });
- *   <div ref={sentinelRef} />
- *
- * For upward scroll (chat history), place the sentinel at the TOP of the list.
- * For downward scroll (feed), place it at the BOTTOM.
- */
+// Hook to trigger loading more content when a sentinel element enters the viewport.
 import { useEffect, useRef, useCallback } from "react";
 
-const useInfiniteScroll = ({ hasMore, onLoadMore, loading = false, threshold = 0.1 }) => {
+const useInfiniteScroll = ({
+  hasMore,
+  onLoadMore,
+  loading = false,
+  threshold = 0.1,
+}) => {
   const sentinelRef = useRef(null);
   const observerRef = useRef(null);
 
-  const stableOnLoadMore = useCallback(onLoadMore, []);
+  const stableOnLoadMore = useCallback(() => {
+    onLoadMore();
+  }, [onLoadMore]);
 
   useEffect(() => {
     if (observerRef.current) observerRef.current.disconnect();
@@ -28,7 +25,7 @@ const useInfiniteScroll = ({ hasMore, onLoadMore, loading = false, threshold = 0
           stableOnLoadMore();
         }
       },
-      { threshold }
+      { threshold },
     );
 
     const el = sentinelRef.current;

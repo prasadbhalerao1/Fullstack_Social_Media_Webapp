@@ -1,14 +1,16 @@
-import express from "express";
 import User from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { getIO } from "../socket/socket.js";
 
+const isProduction = process.env.NODE_ENV === "production";
+
 const cookieOptions = {
   httpOnly: true,
   maxAge: 30 * 24 * 60 * 60 * 1000,
-  secure: false,
-  sameSite: "strict",
+  secure: isProduction,
+  // Required for cross-origin auth cookies in production (Vercel <-> Render)
+  sameSite: isProduction ? "none" : "lax",
 };
 
 const generateToken = (userId) => {
@@ -157,12 +159,10 @@ export const uploadProfileImage = async (req, res) => {
       user: updatedUser,
     });
   } catch (error) {
-    return res
-      .status(500)
-      .json({
-        success: false,
-        message: "Profile Image upload error : " + error.message,
-      });
+    return res.status(500).json({
+      success: false,
+      message: "Profile Image upload error : " + error.message,
+    });
   }
 };
 
@@ -181,52 +181,6 @@ export const allUsers = async (req, res) => {
   }
 };
 
-export const toggleFollowUser = async (req, res) => {
-  try {
-    const targetUserId = req.params.id;
-    const currentUserId = req.user._id;
-
-    if (targetUserId === currentUserId.toString()) {
-      return res.status(400).json({ success: false, message: "You cannot follow yourself" });
-    }
-
-    const targetUser = await User.findById(targetUserId);
-    const currentUser = await User.findById(currentUserId);
-
-    if (!targetUser || !currentUser) {
-      return res.status(404).json({ success: false, message: "User not found" });
-    }
-
-    const isFollowing = currentUser.following.includes(targetUserId);
-
-    if (isFollowing) {
-      // Unfollow
-      await User.findByIdAndUpdate(currentUserId, { $pull: { following: targetUserId } });
-      await User.findByIdAndUpdate(targetUserId, { $pull: { followers: currentUserId } });
-      return res.status(200).json({ success: true, message: "User unfollowed successfully" });
-    } else {
-      // Follow
-      await User.findByIdAndUpdate(currentUserId, { $push: { following: targetUserId } });
-      await User.findByIdAndUpdate(targetUserId, { $push: { followers: currentUserId } });
-
-      // Real-time follow notification
-      const io = getIO();
-      if (io) {
-        io.to(targetUserId).emit("notification", {
-          type: "follow",
-          senderId: currentUserId,
-          senderName: currentUser.username,
-          message: `${currentUser.username} started following you`,
-        });
-      }
-
-      return res.status(200).json({ success: true, message: "User followed successfully" });
-    }
-  } catch (error) {
-    return res.status(500).json({ success: false, message: "Error toggling follow : " + error.message });
-  }
-};
-
 export const getProfileById = async (req, res) => {
   try {
     const user = await User.findById(req.params.id)
@@ -240,7 +194,9 @@ export const getProfileById = async (req, res) => {
       .populate("following", "username profileImage");
 
     if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
     }
 
     return res.status(200).json({
@@ -261,7 +217,9 @@ export const getSuggestedUsers = async (req, res) => {
 
     const currentUser = await User.findById(currentUserId);
     if (!currentUser) {
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
     }
 
     const suggestedUsers = await User.find({
@@ -288,20 +246,24 @@ export const updateUserProfile = async (req, res) => {
     const { username, bio } = req.body;
 
     if (!username) {
-      return res.status(400).json({ success: false, message: "Username is required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Username is required" });
     }
 
     const normalizedUsername = username.toLowerCase().trim();
 
     const existingUser = await User.findOne({ username: normalizedUsername });
     if (existingUser && existingUser._id.toString() !== userId.toString()) {
-      return res.status(400).json({ success: false, message: "Username is already taken" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Username is already taken" });
     }
 
     const updatedUser = await User.findByIdAndUpdate(
       userId,
       { username: normalizedUsername, bio },
-      { new: true }
+      { new: true },
     ).select("-password");
 
     return res.status(200).json({
@@ -323,22 +285,32 @@ export const followUser = async (req, res) => {
     const currentUserId = req.user._id;
 
     if (targetUserId === currentUserId.toString()) {
-      return res.status(400).json({ success: false, message: "You cannot follow yourself" });
+      return res
+        .status(400)
+        .json({ success: false, message: "You cannot follow yourself" });
     }
 
     const targetUser = await User.findById(targetUserId);
     const currentUser = await User.findById(currentUserId);
 
     if (!targetUser || !currentUser) {
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
     }
 
     if (currentUser.following.includes(targetUserId)) {
-      return res.status(400).json({ success: false, message: "You already follow this user" });
+      return res
+        .status(400)
+        .json({ success: false, message: "You already follow this user" });
     }
 
-    await User.findByIdAndUpdate(currentUserId, { $push: { following: targetUserId } });
-    await User.findByIdAndUpdate(targetUserId, { $push: { followers: currentUserId } });
+    await User.findByIdAndUpdate(currentUserId, {
+      $push: { following: targetUserId },
+    });
+    await User.findByIdAndUpdate(targetUserId, {
+      $push: { followers: currentUserId },
+    });
 
     // Real-time follow notification
     const io = getIO();
@@ -351,9 +323,16 @@ export const followUser = async (req, res) => {
       });
     }
 
-    return res.status(200).json({ success: true, message: "User followed successfully" });
+    return res
+      .status(200)
+      .json({ success: true, message: "User followed successfully" });
   } catch (error) {
-    return res.status(500).json({ success: false, message: "Error following user: " + error.message });
+    return res
+      .status(500)
+      .json({
+        success: false,
+        message: "Error following user: " + error.message,
+      });
   }
 };
 
@@ -363,53 +342,90 @@ export const unfollowUser = async (req, res) => {
     const currentUserId = req.user._id;
 
     if (targetUserId === currentUserId.toString()) {
-      return res.status(400).json({ success: false, message: "You cannot unfollow yourself" });
+      return res
+        .status(400)
+        .json({ success: false, message: "You cannot unfollow yourself" });
     }
 
     const targetUser = await User.findById(targetUserId);
     const currentUser = await User.findById(currentUserId);
 
     if (!targetUser || !currentUser) {
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
     }
 
     if (!currentUser.following.includes(targetUserId)) {
-      return res.status(400).json({ success: false, message: "You do not follow this user" });
+      return res
+        .status(400)
+        .json({ success: false, message: "You do not follow this user" });
     }
 
     // Filter array to remove target user's ID
-    currentUser.following = currentUser.following.filter(id => id.toString() !== targetUserId.toString());
+    currentUser.following = currentUser.following.filter(
+      (id) => id.toString() !== targetUserId.toString(),
+    );
     await currentUser.save();
 
-    targetUser.followers = targetUser.followers.filter(id => id.toString() !== currentUserId.toString());
+    targetUser.followers = targetUser.followers.filter(
+      (id) => id.toString() !== currentUserId.toString(),
+    );
     await targetUser.save();
 
-    return res.status(200).json({ success: true, message: "User unfollowed successfully" });
+    return res
+      .status(200)
+      .json({ success: true, message: "User unfollowed successfully" });
   } catch (error) {
-    return res.status(500).json({ success: false, message: "Error unfollowing user: " + error.message });
+    return res
+      .status(500)
+      .json({
+        success: false,
+        message: "Error unfollowing user: " + error.message,
+      });
   }
 };
 
 export const getFollowers = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id).populate("followers", "username profileImage");
+    const user = await User.findById(req.params.id).populate(
+      "followers",
+      "username profileImage",
+    );
     if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
     }
     return res.status(200).json({ success: true, followers: user.followers });
   } catch (error) {
-    return res.status(500).json({ success: false, message: "Error fetching followers: " + error.message });
+    return res
+      .status(500)
+      .json({
+        success: false,
+        message: "Error fetching followers: " + error.message,
+      });
   }
 };
 
 export const getFollowing = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id).populate("following", "username profileImage");
+    const user = await User.findById(req.params.id).populate(
+      "following",
+      "username profileImage",
+    );
     if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
     }
     return res.status(200).json({ success: true, following: user.following });
   } catch (error) {
-    return res.status(500).json({ success: false, message: "Error fetching following: " + error.message });
+    return res
+      .status(500)
+      .json({
+        success: false,
+        message: "Error fetching following: " + error.message,
+      });
   }
 };

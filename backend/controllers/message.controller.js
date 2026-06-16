@@ -1,7 +1,6 @@
 import Conversation from "../models/conversation.model.js";
 import Message from "../models/message.model.js";
 import User from "../models/user.model.js";
-import uploadCloudinary from "../middleware/cloudinaryUpload.js";
 import { getIO, isUserOnline } from "../socket/socket.js";
 
 const MSG_LIMIT = 30;
@@ -28,11 +27,15 @@ export const getOrCreateConversation = async (req, res) => {
 
     const [sender, receiver] = await Promise.all([
       User.findById(senderId).select("blocked"),
-      User.findById(receiverId).select("blocked username profileImage lastSeen"),
+      User.findById(receiverId).select(
+        "blocked username profileImage lastSeen",
+      ),
     ]);
 
     if (!receiver) {
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
     }
 
     const isBlockedBySender = sender.blocked
@@ -84,7 +87,7 @@ export const getConversations = async (req, res) => {
     const shaped = await Promise.all(
       conversations.map(async (conv) => {
         const otherUser = conv.participants.find(
-          (p) => p._id.toString() !== userId.toString()
+          (p) => p._id.toString() !== userId.toString(),
         );
 
         const unreadCount = await Message.countDocuments({
@@ -108,7 +111,7 @@ export const getConversations = async (req, res) => {
           isBlockedByReceiver,
           isOnline: isUserOnline(otherUser?._id),
         };
-      })
+      }),
     );
 
     return res.status(200).json({ success: true, conversations: shaped });
@@ -196,7 +199,7 @@ export const sendMessage = async (req, res) => {
     if (tempId) {
       const existing = await Message.findOne({ tempId }).populate(
         "sender receiver",
-        "username profileImage"
+        "username profileImage",
       );
       if (existing) {
         return res.status(200).json({ success: true, message: existing });
@@ -259,8 +262,9 @@ export const sendMessage = async (req, res) => {
   } catch (err) {
     // Duplicate tempId on concurrent retry
     if (err.code === 11000 && err.keyPattern?.tempId) {
-      const existing = await Message.findOne({ tempId: req.body.tempId })
-        .populate("sender receiver", "username profileImage");
+      const existing = await Message.findOne({
+        tempId: req.body.tempId,
+      }).populate("sender receiver", "username profileImage");
       return res.status(200).json({ success: true, message: existing });
     }
     return res.status(500).json({ success: false, message: err.message });
@@ -319,8 +323,13 @@ export const deleteMessage = async (req, res) => {
         .json({ success: false, message: "Message not found" });
     }
 
-    if (deleteFor === "everyone" && msg.sender.toString() !== userId.toString()) {
-      return res.status(403).json({ success: false, message: "Not authorized" });
+    if (
+      deleteFor === "everyone" &&
+      msg.sender.toString() !== userId.toString()
+    ) {
+      return res
+        .status(403)
+        .json({ success: false, message: "Not authorized" });
     }
 
     if (deleteFor === "everyone") {

@@ -69,27 +69,31 @@ export const {
 
 export default postSlice.reducer;
 
-export const getAllPosts = (cursor = null) => async (dispatch) => {
-  dispatch(setLoading(true));
-  try {
-    const params = new URLSearchParams({ limit: 10 });
-    if (cursor) params.set("cursor", cursor);
-    const { data } = await axiosInstance.get(`/post/all?${params}`);
-    if (data.success) {
-      if (cursor) {
-        dispatch(appendPosts(data.posts));
-      } else {
-        dispatch(setPosts(data.posts));
+export const getAllPosts =
+  (cursor = null) =>
+  async (dispatch) => {
+    dispatch(setLoading(true));
+    try {
+      const params = new URLSearchParams({ limit: 10 });
+      if (cursor) params.set("cursor", cursor);
+      const { data } = await axiosInstance.get(`/post/all?${params}`);
+      if (data.success) {
+        if (cursor) {
+          dispatch(appendPosts(data.posts));
+        } else {
+          dispatch(setPosts(data.posts));
+        }
+        dispatch(setHasMore(data.hasMore));
+        dispatch(setNextCursor(data.nextCursor));
       }
-      dispatch(setHasMore(data.hasMore));
-      dispatch(setNextCursor(data.nextCursor));
+    } catch (error) {
+      dispatch(
+        setError(error.response?.data?.message || "Failed to fetch posts."),
+      );
+    } finally {
+      dispatch(setLoading(false));
     }
-  } catch (error) {
-    dispatch(setError(error.response?.data?.message || "Failed to fetch posts."));
-  } finally {
-    dispatch(setLoading(false));
-  }
-};
+  };
 
 export const toggleLikePost = (postId) => async (dispatch) => {
   try {
@@ -105,7 +109,9 @@ export const toggleLikePost = (postId) => async (dispatch) => {
 
 export const addCommentToPost = (postId, text) => async (dispatch) => {
   try {
-    const { data } = await axiosInstance.post(`/post/${postId}/comment`, { text });
+    const { data } = await axiosInstance.post(`/post/${postId}/comment`, {
+      text,
+    });
     if (data.success) {
       dispatch(updatePostComment({ postId, comment: data.comment }));
     }

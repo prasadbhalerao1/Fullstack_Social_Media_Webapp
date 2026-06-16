@@ -1,6 +1,4 @@
-/**
- * TypingIndicator — animated three-dot typing indicator (WhatsApp style)
- */
+// WhatsApp-style animated three-dot typing indicator.
 const TypingIndicator = () => (
   <div className="flex items-center gap-1 px-3 py-2 bg-neutral-800 rounded-2xl rounded-bl-none w-fit">
     {[0, 1, 2].map((i) => (

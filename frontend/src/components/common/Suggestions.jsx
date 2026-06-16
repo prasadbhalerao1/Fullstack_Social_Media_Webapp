@@ -33,7 +33,9 @@ const Suggestions = ({ isDarkTheme = true }) => {
 
   const textColor = isDarkTheme ? "text-white" : "text-black";
   const subTextColor = isDarkTheme ? "text-neutral-400" : "text-neutral-600";
-  const linkColor = isDarkTheme ? "text-white hover:text-neutral-400" : "text-neutral-800 hover:text-neutral-500";
+  const linkColor = isDarkTheme
+    ? "text-white hover:text-neutral-400"
+    : "text-neutral-800 hover:text-neutral-500";
 
   return (
     <div className="w-full flex flex-col gap-4 p-5 select-none font-sans bg-black/40 rounded-2xl border border-white/5">
@@ -41,7 +43,11 @@ const Suggestions = ({ isDarkTheme = true }) => {
       {currentUser && (
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <ProfileImage user={currentUser} className="w-11 h-11" showOnlineStatus={false} />
+            <ProfileImage
+              user={currentUser}
+              className="w-11 h-11"
+              showOnlineStatus={false}
+            />
             <div className="flex flex-col">
               <Link
                 to={`/profile/${currentUser._id}`}
@@ -66,8 +72,12 @@ const Suggestions = ({ isDarkTheme = true }) => {
       {/* Suggested Section Header */}
       {suggestedUsers.length > 0 && (
         <div className="flex justify-between items-center mt-2">
-          <span className={`text-sm font-bold ${subTextColor}`}>Suggested for you</span>
-          <button className={`text-xs font-semibold cursor-pointer ${linkColor}`}>
+          <span className={`text-sm font-bold ${subTextColor}`}>
+            Suggested for you
+          </span>
+          <button
+            className={`text-xs font-semibold cursor-pointer ${linkColor}`}
+          >
             See All
           </button>
         </div>
@@ -76,9 +86,16 @@ const Suggestions = ({ isDarkTheme = true }) => {
       {/* Suggested Users List */}
       <div className="flex flex-col gap-3.5">
         {suggestedUsers.map((user) => (
-          <div key={user._id} className="flex items-center justify-between gap-4">
+          <div
+            key={user._id}
+            className="flex items-center justify-between gap-4"
+          >
             <div className="flex items-center gap-3">
-              <ProfileImage user={user} className="w-8 h-8" showOnlineStatus={false} />
+              <ProfileImage
+                user={user}
+                className="w-8 h-8"
+                showOnlineStatus={false}
+              />
               <div className="flex flex-col">
                 <Link
                   to={`/profile/${user._id}`}
@@ -98,8 +115,11 @@ const Suggestions = ({ isDarkTheme = true }) => {
 
       {/* Footer Info */}
       <div className="text-[10px] text-neutral-600 mt-6 leading-relaxed">
-        About • Help • Press • API • Jobs • Privacy • Terms • Locations • Language
-        <p className="mt-4 font-semibold uppercase text-neutral-700">© 2026 RUNTIME FROM METADATA</p>
+        About • Help • Press • API • Jobs • Privacy • Terms • Locations •
+        Language
+        <p className="mt-4 font-semibold uppercase text-neutral-700">
+          © 2026 RUNTIME FROM METADATA
+        </p>
       </div>
     </div>
   );

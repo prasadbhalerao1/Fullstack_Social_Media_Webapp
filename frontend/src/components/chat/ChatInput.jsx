@@ -1,21 +1,30 @@
-/**
- * ChatInput — bottom message composer.
- *
- * - Auto-resize textarea (up to ~3 lines then scrolls)
- * - Send on Enter, Shift+Enter for newline
- * - Image/video attachment with preview strip
- * - Typing indicator debounce (stops emitting after 1.5s idle)
- * - Blocked state shows a banner instead of the input
- * - Emoji picker with click-outside detection
- */
+// Bottom message composer supporting auto-resize textarea, attachments, typing indicators, and emojis.
 import { useState, useRef, useCallback, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Send, ImagePlus, X, Loader2, Smile } from "lucide-react";
 import { useSocket } from "@/context/SocketContext.jsx";
-import { addPendingMessage, sendMessageThunk } from "@/redux/slices/messageSlice.js";
+import {
+  addPendingMessage,
+  sendMessageThunk,
+} from "@/redux/slices/messageSlice.js";
 
 const TYPING_DEBOUNCE_MS = 1500;
-const COMMON_EMOJIS = ["😀", "😂", "❤️", "👍", "🔥", "🙌", "🎉", "😮", "😢", "😡", "✨", "🤔", "👀", "👏"];
+const COMMON_EMOJIS = [
+  "😀",
+  "😂",
+  "❤️",
+  "👍",
+  "🔥",
+  "🙌",
+  "🎉",
+  "😮",
+  "😢",
+  "😡",
+  "✨",
+  "🤔",
+  "👀",
+  "👏",
+];
 
 const ChatInput = ({ conversationId, receiverId, isBlocked }) => {
   const dispatch = useDispatch();
@@ -91,7 +100,10 @@ const ChatInput = ({ conversationId, receiverId, isBlocked }) => {
   // Click outside listener to auto-close emoji picker
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (emojiPickerRef.current && !emojiPickerRef.current.contains(e.target)) {
+      if (
+        emojiPickerRef.current &&
+        !emojiPickerRef.current.contains(e.target)
+      ) {
         setShowEmojiPicker(false);
       }
     };

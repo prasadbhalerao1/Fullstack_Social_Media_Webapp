@@ -11,7 +11,6 @@ import {
   VolumeX,
 } from "lucide-react";
 import { axiosInstance } from "@/lib/axios.js";
-import { toast } from "react-hot-toast";
 import { getAllStories } from "@/redux/slices/storiesSlice.js";
 import { getAllPosts } from "@/redux/slices/postSlice.js";
 import { getAllReels } from "@/redux/slices/reelsSlice.js";
@@ -34,6 +33,7 @@ const CreateMedia = ({ type = "post", onClose, onUploadSuccess }) => {
   const videoRef = useRef(null);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setFile(null);
     setCaption("");
     setPreviewUrl(null);
@@ -44,6 +44,7 @@ const CreateMedia = ({ type = "post", onClose, onUploadSuccess }) => {
   }, [currentType]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCurrentType(type);
   }, [type]);
 

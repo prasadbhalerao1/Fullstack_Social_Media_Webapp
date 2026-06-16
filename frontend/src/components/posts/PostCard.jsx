@@ -32,10 +32,12 @@ const PostCard = ({ post, currentUser }) => {
     } else {
       const playPromise = videoRef.current.play();
       if (playPromise !== undefined) {
-        playPromise.then(() => {
-          setIsPlaying(true);
-          setShowPlayIcon(true);
-        }).catch((err) => console.log(err));
+        playPromise
+          .then(() => {
+            setIsPlaying(true);
+            setShowPlayIcon(true);
+          })
+          .catch((err) => console.log(err));
       }
     }
     setTimeout(() => setShowPlayIcon(false), 600);
@@ -62,6 +64,7 @@ const PostCard = ({ post, currentUser }) => {
 
     if (showPostModal) {
       video.pause();
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsPlaying(false);
       return;
     }
@@ -72,9 +75,11 @@ const PostCard = ({ post, currentUser }) => {
           if (entry.isIntersecting) {
             const playPromise = video.play();
             if (playPromise !== undefined) {
-              playPromise.then(() => {
-                setIsPlaying(true);
-              }).catch((err) => console.log("Autoplay blocked:", err));
+              playPromise
+                .then(() => {
+                  setIsPlaying(true);
+                })
+                .catch((err) => console.log("Autoplay blocked:", err));
             }
           } else {
             video.pause();
@@ -82,7 +87,7 @@ const PostCard = ({ post, currentUser }) => {
           }
         });
       },
-      { threshold: 0.6 }
+      { threshold: 0.6 },
     );
 
     observer.observe(video);
@@ -96,7 +101,11 @@ const PostCard = ({ post, currentUser }) => {
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-3">
         <div className="flex items-center gap-3">
-          <ProfileImage user={post?.user} className="w-8 h-8" showOnlineStatus={false} />
+          <ProfileImage
+            user={post?.user}
+            className="w-8 h-8"
+            showOnlineStatus={false}
+          />
           <div className="flex items-center gap-2">
             <Link
               to={`/profile/${post?.user?._id}`}
@@ -110,7 +119,12 @@ const PostCard = ({ post, currentUser }) => {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {!isOwner && <FollowButton targetId={post?.user?._id} currentUser={currentUser} />}
+          {!isOwner && (
+            <FollowButton
+              targetId={post?.user?._id}
+              currentUser={currentUser}
+            />
+          )}
           {isOwner && (
             <button
               onClick={handleDelete}
@@ -185,7 +199,6 @@ const PostCard = ({ post, currentUser }) => {
         onClose={() => setShowPostModal(false)}
         post={post}
         currentUser={currentUser}
-        onDelete={handleDelete}
       />
     </div>
   );

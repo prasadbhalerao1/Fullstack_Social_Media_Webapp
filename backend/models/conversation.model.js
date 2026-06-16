@@ -19,7 +19,7 @@ const conversationSchema = new mongoose.Schema(
     groupName: { type: String },
     groupImage: { type: String },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // Compound index for fast lookup of conversation between two users

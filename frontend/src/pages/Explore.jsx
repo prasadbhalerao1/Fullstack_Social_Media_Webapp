@@ -23,7 +23,7 @@ const Explore = () => {
     ? posts.filter(
         (p) =>
           p.caption?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          p.user?.username?.toLowerCase().includes(searchQuery.toLowerCase())
+          p.user?.username?.toLowerCase().includes(searchQuery.toLowerCase()),
       )
     : posts;
 
@@ -57,7 +57,9 @@ const Explore = () => {
           </div>
         ) : filteredPosts.length === 0 ? (
           <div className="text-center text-neutral-500 text-sm py-20">
-            {searchQuery ? "No posts found matching your search." : "No posts yet."}
+            {searchQuery
+              ? "No posts found matching your search."
+              : "No posts yet."}
           </div>
         ) : (
           <div className="grid grid-cols-3 gap-0.5 md:gap-1">
@@ -91,8 +93,13 @@ const Explore = () => {
                       <span className="text-sm">{post.likes?.length || 0}</span>
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <MessageCircle size={20} className="fill-white text-white" />
-                      <span className="text-sm">{post.comment?.length || 0}</span>
+                      <MessageCircle
+                        size={20}
+                        className="fill-white text-white"
+                      />
+                      <span className="text-sm">
+                        {post.comment?.length || 0}
+                      </span>
                     </div>
                   </div>
                   {post.user && (

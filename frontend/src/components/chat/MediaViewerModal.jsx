@@ -1,6 +1,4 @@
-/**
- * MediaViewerModal — fullscreen viewer for images and videos in DMs
- */
+// Fullscreen modal for viewing images and videos in chat.
 import { useEffect } from "react";
 import { X, Download } from "lucide-react";
 
@@ -41,7 +39,10 @@ const MediaViewerModal = ({ url, mediaType, onClose }) => {
       </div>
 
       {/* Media */}
-      <div onClick={(e) => e.stopPropagation()} className="max-w-[90vw] max-h-[90vh]">
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="max-w-[90vw] max-h-[90vh]"
+      >
         {mediaType === "video" ? (
           <video
             src={url}
