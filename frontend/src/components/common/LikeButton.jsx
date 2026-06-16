@@ -1,6 +1,7 @@
 import { useDispatch, useSelector } from "react-redux";
 import { Heart } from "lucide-react";
 import { toggleLikePost } from "@/redux/slices/postSlice.js";
+import { toggleLikeReel } from "@/redux/slices/reelsSlice.js";
 
 const LikeButton = ({ type, item, size = 24 }) => {
   const dispatch = useDispatch();
@@ -11,7 +12,7 @@ const LikeButton = ({ type, item, size = 24 }) => {
   const handleLike = (e) => {
     e.stopPropagation();
     if (type === "reel") {
-      // Future reels logic if needed
+      dispatch(toggleLikeReel(item?._id));
     } else {
       dispatch(toggleLikePost(item?._id));
     }
@@ -33,3 +34,4 @@ const LikeButton = ({ type, item, size = 24 }) => {
 };
 
 export default LikeButton;
+
