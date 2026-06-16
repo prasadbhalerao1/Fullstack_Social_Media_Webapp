@@ -27,10 +27,13 @@ export const SocketProvider = ({ children }) => {
       return;
     }
 
-    const s = connectSocket();
+    const s = connectSocket(user._id);
     setSocket(s);
 
-    const handleOnlineUsers = (userIds) => setOnlineUsers(userIds);
+    const handleOnlineUsers = (usersMap) => {
+      const userIds = Array.isArray(usersMap) ? usersMap : Object.keys(usersMap);
+      setOnlineUsers(userIds);
+    };
 
     const handleLastSeen = ({ userId, lastSeen }) => {
       setLastSeenMap((prev) => ({ ...prev, [userId]: lastSeen }));
@@ -51,14 +54,14 @@ export const SocketProvider = ({ children }) => {
     s.on("connect", handleConnect);
     s.on("disconnect", handleDisconnect);
     s.on("connect_error", handleConnectError);
-    s.on("online_users", handleOnlineUsers);
+    s.on("getOnlineUsers", handleOnlineUsers);
     s.on("user_last_seen", handleLastSeen);
 
     return () => {
       s.off("connect", handleConnect);
       s.off("disconnect", handleDisconnect);
       s.off("connect_error", handleConnectError);
-      s.off("online_users", handleOnlineUsers);
+      s.off("getOnlineUsers", handleOnlineUsers);
       s.off("user_last_seen", handleLastSeen);
     };
   }, [user]);
