@@ -19,6 +19,16 @@ let io;
 /** userId → Set of socketIds (handles multiple tabs/devices per user) */
 const onlineUsers = new Map();
 
+const getOnlineUsersMap = () => {
+  const map = {};
+  for (const [userId, sockets] of onlineUsers.entries()) {
+    if (sockets.size > 0) {
+      map[userId] = Array.from(sockets)[0];
+    }
+  }
+  return map;
+};
+
 // Parse the JWT from the cookie header
 const parseCookieToken = (cookieHeader = "") => {
   const match = cookieHeader.match(/(?:^|;\s*)token=([^;]*)/);
@@ -40,23 +50,32 @@ export const initSocket = (httpServer) => {
     },
   });
 
-  // Verify JWT on every socket handshake
+  // Verify JWT and userId query parameter on every socket handshake
   io.use(async (socket, next) => {
     try {
+      const userId = socket.handshake.query.userId;
+      if (!userId) {
+        return next(new Error("UNAUTHORIZED: userId query param is required"));
+      }
+
       const token =
         parseCookieToken(socket.handshake.headers.cookie) ||
         socket.handshake.auth?.token;
 
-      if (!token) return next(new Error("UNAUTHORIZED"));
+      if (!token) return next(new Error("UNAUTHORIZED: token not found"));
 
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      const user = await User.findById(decoded._id).select("-password");
+      if (decoded._id.toString() !== userId.toString()) {
+        return next(new Error("UNAUTHORIZED: userId mismatch with token"));
+      }
+
+      const user = await User.findById(userId).select("-password");
       if (!user) return next(new Error("USER_NOT_FOUND"));
 
       socket.user = user;
       next();
-    } catch {
-      next(new Error("AUTH_FAILED"));
+    } catch (err) {
+      next(new Error("AUTH_FAILED: " + err.message));
     }
   });
 
@@ -245,23 +264,33 @@ export const initSocket = (httpServer) => {
 
     // Clean up on disconnect
     socket.on("disconnect", async () => {
-      onlineUsers.get(userId)?.delete(socket.id);
-
-      if (onlineUsers.get(userId)?.size === 0) {
-        onlineUsers.delete(userId);
-        const lastSeen = new Date();
-        await User.findByIdAndUpdate(userId, { lastSeen });
-        io.emit("user_last_seen", { userId, lastSeen });
-        broadcastOnlineUsers();
-      }
+      await handleDisconnected(socket);
     });
   });
 
   return io;
 };
 
+const handleDisconnected = async (socket) => {
+  const userId = socket.user?._id?.toString();
+  if (!userId) return;
+
+  if (onlineUsers.has(userId)) {
+    const sockets = onlineUsers.get(userId);
+    sockets.delete(socket.id);
+    if (sockets.size === 0) {
+      onlineUsers.delete(userId);
+      const lastSeen = new Date();
+      await User.findByIdAndUpdate(userId, { lastSeen });
+      io.emit("user_last_seen", { userId, lastSeen });
+    }
+  }
+  broadcastOnlineUsers();
+};
+
 const broadcastOnlineUsers = () => {
   io.emit("online_users", Array.from(onlineUsers.keys()));
+  io.emit("getOnlineUsers", getOnlineUsersMap());
 };
 
 // When a user comes back online, upgrade their pending "sent" messages to "delivered"
