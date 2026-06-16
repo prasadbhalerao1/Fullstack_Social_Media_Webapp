@@ -30,7 +30,7 @@ const AuthForm = ({
             placeholder="Email Address"
             value={formData.email}
             onChange={handleChange}
-            className={`w-full pl-10 pr-4 py-3 bg-gray-800 text-white border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300 ${error.email ? "border-red-500" : "border-gray-700"}`}
+            className={`w-full pl-10 pr-4 py-3 bg-gray-800 text-white border rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition duration-300 ${error.email ? "border-red-500" : "border-gray-700"}`}
           />
         </div>
         <p className="text-red-500 text-xs mt-1 ml-1 h-4">
@@ -50,7 +50,7 @@ const AuthForm = ({
             placeholder="Password"
             value={formData.password}
             onChange={handleChange}
-            className={`w-full pl-10 pr-4 py-3 bg-gray-800 text-white border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300 ${error.password ? "border-red-500" : "border-gray-700"}`}
+            className={`w-full pl-10 pr-4 py-3 bg-gray-800 text-white border rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition duration-300 ${error.password ? "border-red-500" : "border-gray-700"}`}
           />
         </div>
         <p className="text-red-500 text-xs mt-1 ml-1 h-4">
@@ -62,7 +62,7 @@ const AuthForm = ({
         <button
           type="button"
           onClick={() => switchView("forgotPassword")}
-          className="text-sm font-semibold text-blue-500 hover:text-blue-400 transition duration-300 focus:outline-none"
+          className="text-sm font-semibold text-indigo-400 hover:text-indigo-300 transition duration-300 focus:outline-none"
         >
           Forgot Password?
         </button>

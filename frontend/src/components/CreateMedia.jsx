@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useDispatch } from "react-redux";
 import {
   Upload,
   Image as ImageIcon,
@@ -8,12 +9,14 @@ import {
   Pause,
   Volume2,
   VolumeX,
-  AlertCircle,
 } from "lucide-react";
 import { axiosInstance } from "../lib/axios";
 import { toast } from "react-hot-toast";
+import { getAllStories } from "../redux/slices/storiesSlice";
 
 const CreateMedia = ({ type = "post", onClose, onUploadSuccess }) => {
+  const dispatch = useDispatch();
+
   const [file, setFile] = useState(null);
   const [caption, setCaption] = useState("");
   const [currentType, setCurrentType] = useState(type);
@@ -24,6 +27,7 @@ const CreateMedia = ({ type = "post", onClose, onUploadSuccess }) => {
   const [isDraging, setIsDraging] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
+  
   const fileInputRef = useRef(null);
   const videoRef = useRef(null);
 
@@ -90,23 +94,28 @@ const CreateMedia = ({ type = "post", onClose, onUploadSuccess }) => {
         },
       });
 
-      if (data.success) {
-        toast.success(
-          `${
-            currentType.charAt(0).toUpperCase() + currentType.slice(1)
-          } uploaded successfully!`
-        );
+      if (data?.success) {
+        currentType === "story" ? dispatch(getAllStories()) : "";
+        setFile(null);
+        setCaption("");
+        setPreviewUrl(null);
+        setProgress(0);
+        setError(null);
+        setIsPlaying(false);
+        setIsMuted(false);
+        if (fileInputRef.current) fileInputRef.current.value = "";
+
         if (onUploadSuccess) {
           onUploadSuccess();
         } else if (onClose) {
           onClose();
         }
+      } else {
+        setError(data?.message || "Upload failed");
       }
     } catch (err) {
       console.error("Upload failed:", err);
-      const errMsg = err.response?.data?.message || `Failed to upload ${currentType}.`;
-      setError(errMsg);
-      toast.error(errMsg);
+      setError(err.response?.data?.message || "Upload failed");
     } finally {
       setUploading(false);
     }
@@ -117,203 +126,218 @@ const CreateMedia = ({ type = "post", onClose, onUploadSuccess }) => {
     setPreviewUrl(null);
     setIsPlaying(false);
     setIsMuted(false);
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  const togglePlay = () => {
-    const video = videoRef.current;
-    if (!video) return;
-    if (isPlaying) {
-      video.pause();
-      setIsPlaying(false);
-    } else {
-      video.play().catch((err) => console.log(err));
-      setIsPlaying(true);
-    }
+  const titleMap = {
+    story: "Create a New Story",
+    post: "Create a New Post",
+    reel: "Create a New Reel",
   };
 
-  const toggleMute = () => {
-    const video = videoRef.current;
-    if (!video) return;
-    video.muted = !isMuted;
-    setIsMuted(!isMuted);
+  const buttonMap = {
+    story: "Upload Story",
+    post: "Upload Post",
+    reel: "Upload Reel",
   };
 
   return (
-    <div className="p-4 text-center font-sans">
-      <div className="flex items-center justify-between mb-4 border-b border-white/10 pb-3">
-        <h3 className="text-lg font-bold text-white tracking-wide">
-          Create a New {currentType.charAt(0).toUpperCase() + currentType.slice(1)}
-        </h3>
-        {onClose && (
-          <button
-            onClick={onClose}
-            className="text-neutral-400 hover:text-white transition cursor-pointer"
-          >
-            <X size={18} />
-          </button>
+    <div className="flex w-full flex-col items-center gap-6 p-6 font-sans text-white bg-neutral-950/80 rounded-2xl border border-white/5">
+      <div className="flex flex-col items-center gap-4 w-full">
+        <h2 className="text-xl font-bold tracking-wide">{titleMap[currentType]}</h2>
+        {type !== "story" && (
+          <div className="flex gap-3 w-full max-w-sm">
+            <button
+              type="button"
+              onClick={() => setCurrentType("post")}
+              className={`flex-1 py-2 rounded-xl text-xs font-semibold tracking-wide transition cursor-pointer ${
+                currentType === "post"
+                  ? "bg-white text-black shadow-md shadow-white/20"
+                  : "bg-neutral-800 text-neutral-400 hover:text-white"
+              }`}
+            >
+              Post
+            </button>
+            <button
+              type="button"
+              onClick={() => setCurrentType("reel")}
+              className={`flex-1 py-2 rounded-xl text-xs font-semibold tracking-wide transition cursor-pointer ${
+                currentType === "reel"
+                  ? "bg-white text-black shadow-md shadow-white/20"
+                  : "bg-neutral-800 text-neutral-400 hover:text-white"
+              }`}
+            >
+              Reel
+            </button>
+          </div>
         )}
       </div>
 
-      {/* Media Type Switcher */}
-      <div className="flex justify-center gap-2 mb-6">
-        {["post", "reel", "story"].map((t) => (
-          <button
-            key={t}
-            type="button"
-            disabled={uploading}
-            onClick={() => setCurrentType(t)}
-            className={`px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide capitalize transition duration-300 cursor-pointer ${
-              currentType === t
-                ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/30"
-                : "bg-neutral-800 text-neutral-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
-            }`}
-          >
-            {t}
-          </button>
-        ))}
-      </div>
-
-      {error && (
-        <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-2 text-red-400 text-xs text-left">
-          <AlertCircle size={14} className="shrink-0" />
-          <span>{error}</span>
-        </div>
-      )}
-
-      {/* File Dropzone Area */}
-      {!previewUrl ? (
+      <form onSubmit={handleUpload} className="space-y-5 w-full flex flex-col items-center">
+        {/* Drag Over Area */}
         <div
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
-          onClick={handleClickDropArea}
-          className={`w-full h-72 border-2 border-dashed rounded-2xl flex flex-col items-center justify-center cursor-pointer transition-all duration-300 bg-neutral-900/50 hover:bg-neutral-900/80 group relative ${
-            isDraging ? "border-indigo-500 bg-indigo-500/5" : "border-neutral-700 hover:border-indigo-500"
+          onClick={!previewUrl ? handleClickDropArea : undefined}
+          className={`w-full h-56 rounded-2xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer relative overflow-hidden transition-all duration-300 ${
+            isDraging
+              ? "border-white bg-white/5"
+              : "border-neutral-700 hover:border-white bg-neutral-900/30"
           }`}
         >
-          <input
-            type="file"
-            ref={fileInputRef}
-            accept={currentType === "reel" ? "video/*" : "image/*,video/*"}
-            onChange={handleFileChange}
-            className="hidden"
-          />
-          <div className="p-4 bg-neutral-800 rounded-full text-indigo-400 group-hover:scale-110 transition duration-300 mb-4">
-            <Upload size={24} />
-          </div>
-          <span className="text-sm font-medium text-neutral-300">
-            {isDraging ? "Drop to upload" : "Click or Drag & Drop file"}
-          </span>
-          <div className="flex items-center gap-3 mt-4 text-xs text-neutral-400">
-            {currentType !== "reel" && (
-              <span className="flex items-center gap-1">
-                <ImageIcon size={14} className="text-blue-400" /> Image
-              </span>
-            )}
-            {currentType !== "reel" && <span className="text-neutral-600">|</span>}
-            <span className="flex items-center gap-1">
-              <VideoIcon size={14} className="text-emerald-400" /> Video
-            </span>
-          </div>
-        </div>
-      ) : (
-        <div className="flex flex-col gap-4">
-          {/* File Preview */}
-          <div className="relative w-full h-72 rounded-2xl overflow-hidden bg-black flex items-center justify-center group border border-white/5 shadow-inner">
-            {file?.type.startsWith("video/") ? (
-              <div className="relative w-full h-full flex items-center justify-center">
-                <video
-                  ref={videoRef}
-                  src={previewUrl}
-                  className="w-full h-full object-contain"
-                  playsInline
-                  onClick={togglePlay}
-                  onPlay={() => setIsPlaying(true)}
-                  onPause={() => setIsPlaying(false)}
-                />
-                {/* Custom Overlay Controls */}
-                <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-6">
-                  <button
-                    type="button"
-                    onClick={togglePlay}
-                    className="p-3 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full text-white transition-all transform hover:scale-105 cursor-pointer"
-                  >
-                    {isPlaying ? <Pause size={20} /> : <Play size={20} />}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={toggleMute}
-                    className="p-3 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full text-white transition-all transform hover:scale-105 cursor-pointer"
-                  >
-                    {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
-                  </button>
+          {!previewUrl ? (
+            <div className="flex flex-col items-center text-neutral-400 space-y-3 p-4 pointer-events-none">
+              <div className="p-3 bg-neutral-800 rounded-full text-white group-hover:scale-110 transition duration-300">
+                <Upload size={24} />
+              </div>
+              <p className="text-sm font-medium">
+                {isDraging ? "Drop your file here..." : "Click or Drag & Drop file"}
+              </p>
+              
+              {/* Image & Video side-by-side indicator */}
+              <div className="flex items-center gap-6 text-[11px] font-semibold tracking-wide text-neutral-500 pt-2">
+                <div className="flex items-center gap-1.5">
+                  <ImageIcon size={14} className="text-blue-400" />
+                  <span>IMAGE</span>
+                </div>
+                <span className="text-neutral-700">|</span>
+                <div className="flex items-center gap-1.5">
+                  <VideoIcon size={14} className="text-emerald-400" />
+                  <span>VIDEO</span>
                 </div>
               </div>
-            ) : (
-              <img
-                src={previewUrl}
-                alt="preview"
-                className="w-full h-full object-contain"
-              />
-            )}
-            <button
-              onClick={clearSelection}
-              disabled={uploading}
-              className="absolute top-3 right-3 p-1.5 bg-black/60 hover:bg-black/80 text-white rounded-full transition cursor-pointer"
-            >
-              <X size={16} />
-            </button>
-          </div>
-
-          {/* Caption Input for post/reel */}
-          {currentType !== "story" && (
-            <div className="text-left">
-              <label className="text-xs font-semibold text-neutral-400 mb-1.5 block">
-                Caption
-              </label>
-              <textarea
-                value={caption}
-                onChange={(e) => setCaption(e.target.value)}
-                placeholder="Write a caption..."
-                maxLength={500}
-                rows={3}
-                disabled={uploading}
-                className="w-full bg-neutral-900 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-600/50 focus:border-indigo-600 transition placeholder-neutral-500 resize-none"
-              />
-              <div className="text-right text-[10px] text-neutral-500 mt-1">
-                {caption.length}/500
-              </div>
+            </div>
+          ) : (
+            <div className="relative w-full h-full flex items-center justify-center bg-black/40">
+              {file?.type.startsWith("video/") ? (
+                <div className="relative w-full h-full flex items-center justify-center">
+                  <video
+                    ref={videoRef}
+                    src={previewUrl}
+                    className="w-full h-full object-contain rounded-xl"
+                    playsInline
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const video = videoRef.current;
+                      if (!video) return;
+                      if (isPlaying) {
+                        video.pause();
+                        setIsPlaying(false);
+                      } else {
+                        video.play().catch(err => console.log(err));
+                        setIsPlaying(true);
+                      }
+                    }}
+                  />
+                  {/* Custom controls overlay */}
+                  <div className="absolute bottom-3 left-3 flex gap-2 bg-black/60 backdrop-blur-md p-1.5 rounded-lg border border-white/5 z-20">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const video = videoRef.current;
+                        if (!video) return;
+                        if (isPlaying) {
+                          video.pause();
+                          setIsPlaying(false);
+                        } else {
+                          video.play().catch(err => console.log(err));
+                          setIsPlaying(true);
+                        }
+                      }}
+                      className="text-white hover:scale-105 transition cursor-pointer p-1"
+                    >
+                      {isPlaying ? <Pause size={16} /> : <Play size={16} />}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const video = videoRef.current;
+                        if (!video) return;
+                        video.muted = !video.muted;
+                        setIsMuted(video.muted);
+                      }}
+                      className="text-white hover:scale-105 transition cursor-pointer p-1"
+                    >
+                      {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <img
+                  src={previewUrl}
+                  alt="Preview"
+                  className="w-full h-full object-contain rounded-xl"
+                />
+              )}
+              {/* Clear button */}
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  clearSelection();
+                }}
+                className="absolute top-3 right-3 bg-red-500 hover:bg-red-600 text-white rounded-full p-1.5 shadow-lg shadow-red-500/25 transition cursor-pointer z-30"
+              >
+                <X size={14} />
+              </button>
             </div>
           )}
         </div>
-      )}
 
-      {/* Progress Bar */}
-      {uploading && (
-        <div className="mt-4">
-          <div className="flex justify-between items-center mb-1 text-xs text-neutral-400">
-            <span>Uploading...</span>
-            <span>{progress}%</span>
-          </div>
-          <div className="w-full bg-neutral-800 rounded-full h-1.5 overflow-hidden">
-            <div
-              className="bg-indigo-600 h-full transition-all duration-100 ease-linear animate-pulse"
-              style={{ width: `${progress}%` }}
+        {/* File selector input */}
+        <input
+          type="file"
+          accept="image/*,video/*"
+          onChange={handleFileChange}
+          ref={fileInputRef}
+          className="hidden"
+        />
+
+        {/* Caption for post & reel */}
+        {currentType !== "story" && (
+          <div className="w-full text-left">
+            <label className="text-xs font-semibold text-neutral-400 mb-1.5 block">Caption</label>
+            <input
+              type="text"
+              value={caption}
+              onChange={(e) => setCaption(e.target.value)}
+              placeholder="Add a caption..."
+              disabled={uploading}
+              className="w-full px-4 py-2.5 rounded-xl bg-neutral-900 border border-white/10 outline-none text-white text-sm focus:border-white focus:ring-1 focus:ring-white transition placeholder-neutral-500"
             />
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Action Buttons */}
-      <button
-        disabled={!file || uploading}
-        onClick={handleUpload}
-        className="mt-6 w-full py-3.5 bg-indigo-600 hover:bg-indigo-500 disabled:bg-neutral-800 disabled:text-neutral-500 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition duration-200 shadow-lg shadow-indigo-600/10 cursor-pointer"
-      >
-        {uploading
-          ? `Uploading ${currentType}...`
-          : `Share ${currentType.charAt(0).toUpperCase() + currentType.slice(1)}`}
-      </button>
+        {/* Progress Bar */}
+        {uploading && (
+          <div className="w-full mt-2">
+            <div className="flex justify-between items-center mb-1 text-xs text-neutral-400">
+              <span>Uploading...</span>
+              <span>{progress}%</span>
+            </div>
+            <div className="w-full bg-neutral-800 rounded-full h-1.5 overflow-hidden">
+              <div
+                className="bg-white h-full transition-all duration-200 ease-linear animate-pulse"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+          </div>
+        )}
+
+        {error && <p className="text-red-500 text-xs text-center">{error}</p>}
+
+        {/* Submit button */}
+        <button
+          type="submit"
+          disabled={uploading || !file}
+          className="w-full py-3 rounded-full bg-white hover:bg-neutral-200 text-black font-semibold shadow-lg shadow-white/10 transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-sm"
+        >
+          {uploading ? "Uploading..." : buttonMap[currentType]}
+        </button>
+      </form>
     </div>
   );
 };

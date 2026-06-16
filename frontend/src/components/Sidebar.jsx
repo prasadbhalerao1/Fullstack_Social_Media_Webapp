@@ -12,6 +12,8 @@ import {
   Plus,
 } from "lucide-react";
 import { logoutUser } from "../redux/slices/userSlice";
+import Modal from "./Modal";
+import CreateMedia from "./CreateMedia";
 
 const logo = "/logo.png";
 
@@ -23,6 +25,7 @@ const Sidebar = () => {
   const navigate = useNavigate();
 
   const [active, setActive] = useState("home");
+  const [isCreateMediaModalOpen, setIsCreateMediaModalOpen] = useState(false);
 
   const navItems = [
     { id: "home", name: "Home", icon: <Home size={20} />, path: "/" },
@@ -50,7 +53,7 @@ const Sidebar = () => {
   ];
 
   const handleOpenModal = (type) => {
-    console.log("Open Modal:", type);
+    setIsCreateMediaModalOpen(true);
   };
 
 
@@ -67,80 +70,98 @@ const Sidebar = () => {
   };
 
   return (
-    <aside className="sticky top-0 left-0 h-screen z-50 w-20 md:w-64 p-4 flex flex-col gap-6 border-r border-white/10 backdrop-blur-xl bg-black rounded-tr-3xl rounded-br-3xl shadow-2xl">
-      {/* Logo Section */}
-      <div className="px-2 py-4">
-        <Link to="/" className="flex items-center gap-3">
-          <img src={logo} alt="logo" className="w-12 h-12 object-contain" />
-          <span className="hidden md:block text-2xl font-black tracking-wider text-white">
-            RUNTIME
-          </span>
-        </Link>
-      </div>
+    <>
+      <aside className="sticky top-0 left-0 h-screen z-50 w-20 md:w-64 p-4 flex flex-col gap-6 border-r border-white/10 backdrop-blur-xl bg-black rounded-tr-3xl rounded-br-3xl shadow-2xl">
+        {/* Logo Section */}
+        <div className="px-2 py-4">
+          <Link to="/" className="flex items-center gap-3">
+            <img src={logo} alt="logo" className="w-12 h-12 object-contain" />
+            <span className="hidden md:block text-2xl font-black tracking-wider text-white">
+              RUNTIME
+            </span>
+          </Link>
+        </div>
 
-      {/* Navigation Items */}
-      <nav className="flex flex-col gap-2 flex-1">
-        {navItems?.map((item) => {
-          const isItemActive = isActive(item);
-          const activeClass = isItemActive
-            ? "bg-white/10 text-white font-semibold shadow-sm"
-            : "text-white/75 hover:bg-white/5 hover:text-white";
+        {/* Navigation Items */}
+        <nav className="flex flex-col gap-2 flex-1">
+          {navItems?.map((item) => {
+            const isItemActive = isActive(item);
+            const activeClass = isItemActive
+              ? "bg-white/10 text-white font-semibold shadow-sm"
+              : "text-white/75 hover:bg-white/5 hover:text-white";
 
-          if (item.id === "logout") {
+            if (item.id === "logout") {
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => dispatch(logoutUser(navigate))}
+                  className="flex items-center gap-3 p-3 rounded-2xl transition-all duration-300 text-red-400 hover:bg-red-500/10 cursor-pointer justify-center md:justify-start"
+                >
+                  {item.icon}
+                  <span className="hidden md:inline font-medium">
+                    {item.name}
+                  </span>
+                </button>
+              );
+            }
+
+            if (item.path) {
+              return (
+                <Link
+                  key={item.id}
+                  to={item.path}
+                  onClick={() => setActive(item.id)}
+                  className={`flex items-center gap-3 p-3 rounded-2xl transition-all duration-300 cursor-pointer justify-center md:justify-start ${activeClass}`}
+                >
+                  {item.icon}
+                  <span className="hidden md:inline font-medium">
+                    {item.name}
+                  </span>
+                </Link>
+              );
+            }
+
             return (
               <button
                 key={item.id}
-                onClick={() => dispatch(logoutUser(navigate))}
-                className="flex items-center gap-3 p-3 rounded-2xl transition-all duration-300 text-red-400 hover:bg-red-500/10 cursor-pointer justify-center md:justify-start"
-              >
-                {item.icon}
-                <span className="hidden md:inline font-medium">
-                  {item.name}
-                </span>
-              </button>
-            );
-          }
-
-          if (item.path) {
-            return (
-              <Link
-                key={item.id}
-                to={item.path}
                 onClick={() => setActive(item.id)}
                 className={`flex items-center gap-3 p-3 rounded-2xl transition-all duration-300 cursor-pointer justify-center md:justify-start ${activeClass}`}
               >
                 {item.icon}
-                <span className="hidden md:inline font-medium">
-                  {item.name}
-                </span>
-              </Link>
+                <span className="hidden md:inline font-medium">{item.name}</span>
+              </button>
             );
-          }
+          })}
+        </nav>
 
-          return (
-            <button
-              key={item.id}
-              onClick={() => setActive(item.id)}
-              className={`flex items-center gap-3 p-3 rounded-2xl transition-all duration-300 cursor-pointer justify-center md:justify-start ${activeClass}`}
-            >
-              {item.icon}
-              <span className="hidden md:inline font-medium">{item.name}</span>
-            </button>
-          );
-        })}
-      </nav>
+        {/* Create Button Section */}
+        <div className="mt-auto px-2 pb-4">
+          <button
+            onClick={() => handleOpenModal("post")}
+            className="flex items-center justify-center gap-2 w-full p-3 md:py-3.5 rounded-2xl bg-white hover:bg-neutral-200 text-black font-semibold shadow-lg shadow-white/10 transition-all duration-300 cursor-pointer"
+          >
+            <Plus size={20} />
+            <span className="hidden md:inline font-medium">Create</span>
+          </button>
+        </div>
+      </aside>
 
-      {/* Create Button Section */}
-      <div className="mt-auto px-2 pb-4">
-        <button
-          onClick={() => handleOpenModal("post")}
-          className="flex items-center justify-center gap-2 w-full p-3 md:py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold shadow-lg shadow-indigo-600/20 transition-all duration-300 cursor-pointer"
-        >
-          <Plus size={20} />
-          <span className="hidden md:inline font-medium">Create</span>
-        </button>
-      </div>
-    </aside>
+      {/* Create Media Modal */}
+      <Modal
+        openModal={isCreateMediaModalOpen}
+        onClose={() => setIsCreateMediaModalOpen(false)}
+        initialWidth="max-w-2xl"
+        initialHeight="h-auto"
+      >
+        <div className="w-full max-w-2xl">
+          <CreateMedia
+            type="post"
+            onClose={() => setIsCreateMediaModalOpen(false)}
+            onUploadSuccess={() => setIsCreateMediaModalOpen(false)}
+          />
+        </div>
+      </Modal>
+    </>
   );
 };
 

@@ -32,11 +32,11 @@ export const getAllStories = () => async (dispatch) => {
   dispatch(setLoading(true));
   try {
     const { data } = await axiosInstance.get("/story/all");
-    if (data.success) {
-      dispatch(setStories(data.stories));
+    if (data?.success) {
+      dispatch(setStories(data?.stories));
     }
   } catch (error) {
-    dispatch(setError(error.response?.data?.message || "Failed to fetch stories."));
+    dispatch(setError(error?.response?.data?.message || error?.message || "Failed to fetch stories."));
   } finally {
     dispatch(setLoading(false));
   }
@@ -48,14 +48,14 @@ export const createStory = (formData, callback) => async (dispatch) => {
     const { data } = await axiosInstance.post("/story/create", formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
-    if (data.success) {
-      toast.success(data.message || "Story created successfully!");
+    if (data?.success) {
+      toast.success(data?.message || "Story created successfully!");
       dispatch(getAllStories());
       if (callback) callback();
     }
   } catch (error) {
-    dispatch(setError(error.response?.data?.message || "Failed to create story."));
-    toast.error(error.response?.data?.message || "Failed to create story.");
+    dispatch(setError(error?.response?.data?.message || error?.message || "Failed to create story."));
+    toast.error(error?.response?.data?.message || error?.message || "Failed to create story.");
   } finally {
     dispatch(setLoading(false));
   }
@@ -64,7 +64,7 @@ export const createStory = (formData, callback) => async (dispatch) => {
 export const viewStory = (storyId) => async (dispatch) => {
   try {
     const { data } = await axiosInstance.get(`/story/${storyId}/view`);
-    if (data.success) {
+    if (data?.success) {
       dispatch(getAllStories());
     }
   } catch (error) {
@@ -75,8 +75,8 @@ export const viewStory = (storyId) => async (dispatch) => {
 export const toggleLikeStory = (storyId) => async (dispatch) => {
   try {
     const { data } = await axiosInstance.put(`/story/${storyId}/like`);
-    if (data.success) {
-      toast.success(data.message);
+    if (data?.success) {
+      toast.success(data?.message);
       dispatch(getAllStories());
     }
   } catch (error) {
@@ -87,7 +87,7 @@ export const toggleLikeStory = (storyId) => async (dispatch) => {
 export const addCommentToStory = (storyId, commentText) => async (dispatch) => {
   try {
     const { data } = await axiosInstance.post(`/story/${storyId}/comment`, { text: commentText });
-    if (data.success) {
+    if (data?.success) {
       toast.success("Comment added!");
       dispatch(getAllStories());
     }
@@ -100,13 +100,13 @@ export const deleteStory = (storyId) => async (dispatch) => {
   dispatch(setLoading(true));
   try {
     const { data } = await axiosInstance.delete(`/story/${storyId}`);
-    if (data.success) {
-      toast.success(data.message || "Story deleted successfully!");
+    if (data?.success) {
+      toast.success(data?.message || "Story deleted successfully!");
       dispatch(getAllStories());
     }
   } catch (error) {
-    dispatch(setError(error.response?.data?.message || "Failed to delete story."));
-    toast.error(error.response?.data?.message || "Failed to delete story.");
+    dispatch(setError(error?.response?.data?.message || error?.message || "Failed to delete story."));
+    toast.error(error?.response?.data?.message || error?.message || "Failed to delete story.");
   } finally {
     dispatch(setLoading(false));
   }

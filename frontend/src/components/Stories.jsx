@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import {
   Plus,
   Play,
@@ -13,13 +13,19 @@ import {
   MessageCircle,
   Send,
 } from "lucide-react";
-import { axiosInstance } from "../lib/axios";
 import { toast } from "react-hot-toast";
 import Modal from "./Modal";
 import CreateMedia from "./CreateMedia";
+import {
+  getAllStories,
+  viewStory,
+  toggleLikeStory,
+  addCommentToStory,
+} from "../redux/slices/storiesSlice";
 
 const Stories = () => {
   const { user: currentUser } = useSelector((state) => state.user);
+  const dispatch = useDispatch();
 
   // Refs
   const videoRef = useRef(null);
@@ -27,7 +33,7 @@ const Stories = () => {
   const commentsModalRef = useRef(null);
 
   // States
-  const [stories, setStories] = useState([]);
+  const { stories } = useSelector((state) => state.stories);
   const [currentUserIndex, setCurrentUserIndex] = useState(0);
   const [isCreateStoryModal, setIsCreateStoryModal] = useState(false);
   const [isPlaying, setIsPlaying] = useState(true);
@@ -53,21 +59,9 @@ const Stories = () => {
   const canGoPrevious = currentUserIndex > 0 || currentStoryIndex > 0;
   const canGoNext = !isLastStoryOfLastUser;
 
-  const getAllStories = async () => {
-    try {
-      const { data } = await axiosInstance.get("/story/all");
-      if (data.success && data.stories) {
-        setStories(data.stories);
-      }
-    } catch (error) {
-      console.log("Error fetching stories:", error);
-    }
-  };
-
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    getAllStories();
-  }, []);
+    dispatch(getAllStories());
+  }, [dispatch]);
 
   const handleCreateStoryModal = () => {
     setIsCreateStoryModal(true);
@@ -81,13 +75,9 @@ const Stories = () => {
     setIsPlaying(true);
   };
 
-  const handleStorView = async (storyId) => {
+  const handleStorView = (storyId) => {
     if (!storyId) return;
-    try {
-      await axiosInstance.get(`/story/${storyId}/view`);
-    } catch (error) {
-      console.log("Error viewing story:", error);
-    }
+    dispatch(viewStory(storyId));
   };
 
   const handlePlayPause = () => {
@@ -165,40 +155,20 @@ const Stories = () => {
     stories,
   ]);
 
-  const handleLikeStory = async () => {
-    if (!currentStory) return;
-    try {
-      const { data } = await axiosInstance.put(
-        `/story/${currentStory._id}/like`,
-      );
-      if (data.success) {
-        toast.success(data.message);
-        getAllStories();
-      }
-    } catch (error) {
-      console.error("Error liking story:", error);
-    }
+  const handleLikeStory = () => {
+    if (!currentStory?._id) return;
+    dispatch(toggleLikeStory(currentStory._id));
   };
 
   const commentModal = () => {
     setShowCommentsModal(true);
   };
 
-  const addCommentToStory = async (storyId) => {
+  const handleAddCommentToStory = (storyId) => {
     const id = storyId || currentStory?._id;
     if (!commentText.trim() || !id) return;
-    try {
-      const { data } = await axiosInstance.post(`/story/${id}/comment`, {
-        text: commentText,
-      });
-      if (data.success) {
-        toast.success("Comment added!");
-        setCommentText("");
-        getAllStories();
-      }
-    } catch (error) {
-      console.error("Error adding comment:", error);
-    }
+    dispatch(addCommentToStory(id, commentText));
+    setCommentText("");
   };
 
   // Playback timer & progress management
@@ -324,7 +294,7 @@ const Stories = () => {
         onClick={handleCreateStoryModal}
         className="shrink-0 flex flex-col items-center cursor-pointer group"
       >
-        <div className="relative w-16 h-16 rounded-full border-2 border-dashed border-neutral-700 hover:border-indigo-500 transition-all duration-300 p-0.5 flex items-center justify-center bg-neutral-900/50">
+        <div className="relative w-16 h-16 rounded-full border-2 border-dashed border-neutral-700 hover:border-white transition-all duration-300 p-0.5 flex items-center justify-center bg-neutral-900/50">
           {currentUser?.profileImage ? (
             <img
               src={currentUser?.profileImage}
@@ -336,8 +306,8 @@ const Stories = () => {
               <Plus size={18} />
             </div>
           )}
-          <div className="absolute -bottom-1 -right-1 bg-indigo-600 group-hover:bg-indigo-500 rounded-full p-1 shadow-md transition">
-            <Plus size={12} className="text-white" />
+          <div className="absolute -bottom-1 -right-1 bg-white group-hover:bg-neutral-200 rounded-full p-1 shadow-md transition">
+            <Plus size={12} className="text-black" />
           </div>
         </div>
         <span className="mt-2 text-[11px] text-neutral-400 font-medium group-hover:text-white transition truncate w-16 text-center">
@@ -356,7 +326,7 @@ const Stories = () => {
             <div
               className={`p-0.5 rounded-full border-2 transition-all duration-300 ${
                 index === currentUserIndex && showStoryModal
-                  ? "border-indigo-500 scale-105"
+                  ? "border-white scale-105"
                   : "border-neutral-800 group-hover:border-neutral-600 group-hover:scale-105"
               }`}
             >
@@ -377,17 +347,18 @@ const Stories = () => {
 
       {/* Create Story Modal */}
       <Modal
-        open={isCreateStoryModal}
-        onOpenChange={setIsCreateStoryModal}
-        title="Create Story"
-        description="Upload a new story"
+        openModal={isCreateStoryModal}
+        onClose={() => setIsCreateStoryModal(false)}
+        initialWidth="max-w-2xl"
+        initialHeight="h-auto"
       >
         <div className="w-full max-w-2xl">
           <CreateMedia
+            type="story"
             onClose={() => setIsCreateStoryModal(false)}
             onUploadSuccess={() => {
               setIsCreateStoryModal(false);
-              getAllStories();
+              dispatch(getAllStories());
             }}
           />
         </div>
@@ -395,12 +366,12 @@ const Stories = () => {
 
       {/* View Story Modal */}
       <Modal
-        open={showStoryModal}
-        onOpenChange={setShowStoryModal}
+        openModal={showStoryModal}
+        onClose={() => setShowStoryModal(false)}
         showCloseButton={false}
-        className="max-w-105 p-0 border-none bg-transparent shadow-none"
-        title="View Story"
-        description="Viewing active stories"
+        initialWidth="max-w-[420px]"
+        initialHeight="h-auto"
+        className="p-0 border-none bg-transparent shadow-none"
       >
         <div className="relative w-full flex flex-col items-center">
           {/* The close button was removed from here per user request */}
@@ -555,7 +526,7 @@ const Stories = () => {
                   >
                     <MessageCircle size={20} className="text-white" />
                     {currentStory?.comment?.length > 0 && (
-                      <span className="absolute -top-3 -right-2 text-[9px] text-white font-bold bg-indigo-600 rounded-full min-h-4 h-4 min-w-4 flex items-center justify-center px-1 shadow">
+                      <span className="absolute -top-3 -right-2 text-[9px] text-black font-bold bg-white rounded-full min-h-4 h-4 min-w-4 flex items-center justify-center px-1 shadow">
                         {currentStory.comment.length}
                       </span>
                     )}
@@ -572,7 +543,7 @@ const Stories = () => {
                     className="w-full bg-white/10 hover:bg-white/15 focus:bg-white/20 border border-white/5 rounded-full pl-4 pr-10 py-2 text-white text-xs placeholder-neutral-400 focus:outline-none transition duration-200"
                   />
                   <button
-                    onClick={() => addCommentToStory(currentStory?._id)}
+                    onClick={() => handleAddCommentToStory(currentStory?._id)}
                     className="absolute right-2 text-neutral-400 hover:text-white transition cursor-pointer p-1"
                   >
                     <Send size={14} />
@@ -646,11 +617,11 @@ const Stories = () => {
                       value={commentText}
                       onChange={(e) => setCommentText(e.target.value)}
                       placeholder="Reply..."
-                      className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                      className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-xs focus:outline-none focus:ring-1 focus:ring-white"
                     />
                     <button
-                      onClick={() => addCommentToStory(currentStory?._id)}
-                      className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-xl text-white font-semibold text-xs transition"
+                      onClick={() => handleAddCommentToStory(currentStory?._id)}
+                      className="px-4 py-2 bg-white hover:bg-neutral-200 rounded-xl text-black font-semibold text-xs transition"
                     >
                       Send
                     </button>
