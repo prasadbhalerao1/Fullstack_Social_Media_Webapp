@@ -1,18 +1,12 @@
 import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
-import {
-  Heart,
-  Trash2,
-  Play,
-  Pause,
-  Volume2,
-  VolumeX,
-} from "lucide-react";
+import { Heart, Trash2 } from "lucide-react";
 import Modal from "@/components/common/Modal.jsx";
 import ProfileImage from "@/components/common/ProfileImage.jsx";
 import FollowButton from "@/components/common/FollowButton.jsx";
 import MediaIcons from "@/components/common/MediaIcons.jsx";
 import CommentForm from "@/components/common/CommentForm.jsx";
+import Media from "@/components/common/Media.jsx";
 import { timeAgo } from "@/lib/timeAgo.js";
 
 const PostDetailsModal = ({
@@ -77,49 +71,17 @@ const PostDetailsModal = ({
     >
       <div className="flex flex-col md:flex-row w-full h-full">
         {/* Left Side: Media */}
-        <div className="flex-1 bg-black flex items-center justify-center relative overflow-hidden h-[40vh] md:h-full">
-          {post?.mediaType === "image" ? (
-            <img
-              src={post?.mediaUrl}
-              alt={post?.caption}
-              className="w-full h-full object-contain bg-neutral-950"
-            />
-          ) : (
-            <div
-              className="relative w-full h-full cursor-pointer flex items-center justify-center bg-neutral-950"
-              onClick={handleVideoClick}
-            >
-              <video
-                ref={videoRef}
-                src={post?.mediaUrl}
-                className="w-full h-full object-contain"
-                loop
-                playsInline
-                muted={isMuted}
-                autoPlay
-              />
-              {/* Play/Pause overlay animation */}
-              {showPlayIcon && (
-                <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none transition-opacity duration-500">
-                  <div className="bg-black/50 p-4 rounded-full text-white animate-pulse">
-                    {isPlaying ? (
-                      <Play size={40} className="fill-white" />
-                    ) : (
-                      <Pause size={40} className="fill-white" />
-                    )}
-                  </div>
-                </div>
-              )}
-              {/* Volume Control */}
-              <button
-                onClick={handleMuteToggle}
-                className="absolute bottom-4 right-4 bg-black/60 p-2 rounded-full text-white hover:bg-black/80 transition cursor-pointer z-20"
-              >
-                {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
-              </button>
-            </div>
-          )}
-        </div>
+        <Media
+          item={post}
+          videoRef={videoRef}
+          isPlaying={isPlaying}
+          isMuted={isMuted}
+          showPlayIcon={showPlayIcon}
+          handleVideoClick={handleVideoClick}
+          handleMuteToggle={handleMuteToggle}
+          containerClassName="flex-1 h-[40vh] md:h-full"
+          mediaClassName="w-full h-full object-contain"
+        />
 
         {/* Right Side: Details */}
         <div className="w-full md:w-[350px] flex flex-col bg-black border-l border-white/10 h-[40vh] md:h-full">

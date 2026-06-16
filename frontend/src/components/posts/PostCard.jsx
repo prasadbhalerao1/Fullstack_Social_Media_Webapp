@@ -1,18 +1,13 @@
 import { useState, useRef, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { Link } from "react-router-dom";
-import {
-  Trash2,
-  Play,
-  Pause,
-  Volume2,
-  VolumeX,
-} from "lucide-react";
+import { Trash2 } from "lucide-react";
 import ProfileImage from "@/components/common/ProfileImage.jsx";
 import FollowButton from "@/components/common/FollowButton.jsx";
 import PostDetailsModal from "./PostDetailsModal.jsx";
 import MediaIcons from "@/components/common/MediaIcons.jsx";
 import CommentForm from "@/components/common/CommentForm.jsx";
+import Media from "@/components/common/Media.jsx";
 import { timeAgo } from "@/lib/timeAgo.js";
 import { deletePostById } from "@/redux/slices/postSlice.js";
 
@@ -121,42 +116,16 @@ const PostCard = ({ post, currentUser }) => {
       </div>
 
       {/* Media */}
-      <div className="relative w-full bg-neutral-950 flex justify-center items-center overflow-hidden max-h-[600px] border-y border-white/5 sm:border-none">
-        {post?.mediaType === "image" ? (
-          <img
-            src={post?.mediaUrl}
-            alt="Post Media"
-            className="w-full h-auto object-contain max-h-[600px]"
-            loading="lazy"
-          />
-        ) : (
-          <div className="relative w-full h-full cursor-pointer" onClick={handleVideoClick}>
-            <video
-              ref={videoRef}
-              src={post?.mediaUrl}
-              className="w-full h-auto object-contain max-h-[600px]"
-              loop
-              playsInline
-              muted={isMuted}
-            />
-            {/* Play/Pause overlay animation */}
-            {showPlayIcon && (
-              <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
-                <div className="bg-black/50 p-4 rounded-full text-white animate-pulse">
-                  {isPlaying ? <Play size={40} className="fill-white" /> : <Pause size={40} className="fill-white" />}
-                </div>
-              </div>
-            )}
-            {/* Volume Control */}
-            <button
-              onClick={handleMuteToggle}
-              className="absolute bottom-4 right-4 bg-black/60 p-1.5 rounded-full text-white hover:bg-black/80 transition cursor-pointer z-20"
-            >
-              {isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
-            </button>
-          </div>
-        )}
-      </div>
+      <Media
+        item={post}
+        videoRef={videoRef}
+        isPlaying={isPlaying}
+        isMuted={isMuted}
+        showPlayIcon={showPlayIcon}
+        handleVideoClick={handleVideoClick}
+        handleMuteToggle={handleMuteToggle}
+        containerClassName="max-h-[600px] border-y border-white/5 sm:border-none"
+      />
 
       {/* Actions */}
       <MediaIcons

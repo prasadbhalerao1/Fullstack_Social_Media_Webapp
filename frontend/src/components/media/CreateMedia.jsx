@@ -13,6 +13,8 @@ import {
 import { axiosInstance } from "@/lib/axios.js";
 import { toast } from "react-hot-toast";
 import { getAllStories } from "@/redux/slices/storiesSlice.js";
+import { getAllPosts } from "@/redux/slices/postSlice.js";
+import { getAllReels } from "@/redux/slices/reelsSlice.js";
 
 const CreateMedia = ({ type = "post", onClose, onUploadSuccess }) => {
   const dispatch = useDispatch();
@@ -95,7 +97,9 @@ const CreateMedia = ({ type = "post", onClose, onUploadSuccess }) => {
       });
 
       if (data?.success) {
-        currentType === "story" ? dispatch(getAllStories()) : "";
+        if (currentType === "story") dispatch(getAllStories());
+        else if (currentType === "post") dispatch(getAllPosts());
+        else if (currentType === "reel") dispatch(getAllReels());
         setFile(null);
         setCaption("");
         setPreviewUrl(null);

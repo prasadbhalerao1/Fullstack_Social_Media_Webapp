@@ -39,6 +39,7 @@ const Stories = () => {
   const progressIntervalRef = useRef(null);
   const commentsModalRef = useRef(null);
   const viewsModalRef = useRef(null);
+  const scrollRef = useRef(null);
 
   // States
   const { stories } = useSelector((state) => state.stories);
@@ -54,8 +55,98 @@ const Stories = () => {
   const [showCommentsModal, setShowCommentsModal] = useState(false);
   const [showViewsModal, setShowViewsModal] = useState(false);
 
+  // Drag-to-Scroll & Carousel States
+  const [isDown, setIsDown] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeftState, setScrollLeftState] = useState(0);
+  const [showLeftArrow, setShowLeftArrow] = useState(false);
+  const [showRightArrow, setShowRightArrow] = useState(false);
+
   // Interactive Controls States
   const [commentText, setCommentText] = useState("");
+
+  const updateArrowVisibility = () => {
+    const slider = scrollRef.current;
+    if (!slider) return;
+    setShowLeftArrow(slider.scrollLeft > 5);
+    setShowRightArrow(slider.scrollLeft < slider.scrollWidth - slider.clientWidth - 5);
+  };
+
+  useEffect(() => {
+    const slider = scrollRef.current;
+    if (!slider) return;
+
+    // Run initial check after data loads
+    const timer = setTimeout(updateArrowVisibility, 300);
+
+    slider.addEventListener("scroll", updateArrowVisibility);
+    window.addEventListener("resize", updateArrowVisibility);
+    return () => {
+      clearTimeout(timer);
+      slider.removeEventListener("scroll", updateArrowVisibility);
+      window.removeEventListener("resize", updateArrowVisibility);
+    };
+  }, [stories]);
+
+  const handleMouseDown = (e) => {
+    const slider = scrollRef.current;
+    if (!slider) return;
+    setIsDown(true);
+    setStartX(e.pageX - slider.offsetLeft);
+    setScrollLeftState(slider.scrollLeft);
+  };
+
+  const handleMouseLeave = () => {
+    setIsDown(false);
+  };
+
+  const handleMouseUp = () => {
+    setIsDown(false);
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDown) return;
+    e.preventDefault();
+    const slider = scrollRef.current;
+    if (!slider) return;
+    const x = e.pageX - slider.offsetLeft;
+    const walk = (x - startX) * 2; // scroll speed multiplier
+    slider.scrollLeft = scrollLeftState - walk;
+  };
+
+  // Touch scroll equivalents
+  const handleTouchStart = (e) => {
+    const slider = scrollRef.current;
+    if (!slider) return;
+    setIsDown(true);
+    setStartX(e.touches[0].pageX - slider.offsetLeft);
+    setScrollLeftState(slider.scrollLeft);
+  };
+
+  const handleTouchEnd = () => {
+    setIsDown(false);
+  };
+
+  const handleTouchMove = (e) => {
+    if (!isDown) return;
+    const slider = scrollRef.current;
+    if (!slider) return;
+    const x = e.touches[0].pageX - slider.offsetLeft;
+    const walk = (x - startX) * 1.5;
+    slider.scrollLeft = scrollLeftState - walk;
+  };
+
+  const scrollStories = (direction) => {
+    const slider = scrollRef.current;
+    if (!slider) return;
+    const scrollAmount = slider.clientWidth * 0.75; // scroll 75% of visible width
+    slider.scrollTo({
+      left: direction === "left"
+        ? slider.scrollLeft - scrollAmount
+        : slider.scrollLeft + scrollAmount,
+      behavior: "smooth",
+    });
+  };
 
   // Derived selectors
   const currentUserStories = stories[currentUserIndex]?.stories || [];
@@ -321,61 +412,94 @@ const Stories = () => {
   }, [showStoryModal]);
 
   return (
-    <div className="w-full flex items-center overflow-x-auto py-4 px-2 space-x-6 no-scrollbar select-none border-b border-white/5">
-      {/* Create Story Button */}
+    <>
+      <div className="relative w-full group">
+      {/* Left Chevron */}
+      {showLeftArrow && (
+        <button
+          onClick={() => scrollStories("left")}
+          className="absolute left-2 top-10 z-20 bg-neutral-900/80 hover:bg-neutral-800 text-white rounded-full p-1.5 shadow-md border border-white/5 transition hover:scale-105 active:scale-95 cursor-pointer flex items-center justify-center"
+        >
+          <ArrowLeft size={14} />
+        </button>
+      )}
+
+      {/* Right Chevron */}
+      {showRightArrow && (
+        <button
+          onClick={() => scrollStories("right")}
+          className="absolute right-2 top-10 z-20 bg-neutral-900/80 hover:bg-neutral-800 text-white rounded-full p-1.5 shadow-md border border-white/5 transition hover:scale-105 active:scale-95 cursor-pointer flex items-center justify-center"
+        >
+          <ArrowRight size={14} />
+        </button>
+      )}
+
       <div
-        onClick={handleCreateStoryModal}
-        className="shrink-0 flex flex-col items-center cursor-pointer group"
+        ref={scrollRef}
+        onMouseDown={handleMouseDown}
+        onMouseLeave={handleMouseLeave}
+        onMouseUp={handleMouseUp}
+        onMouseMove={handleMouseMove}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        onTouchMove={handleTouchMove}
+        className="w-full flex items-center overflow-x-auto py-4 px-2 space-x-6 no-scrollbar select-none border-b border-white/5 cursor-grab active:cursor-grabbing scroll-smooth"
       >
-        <div className="relative w-16 h-16 rounded-full border border-dashed border-neutral-700 hover:border-white transition-all duration-300 p-0.5 flex items-center justify-center bg-neutral-900/50">
-          <ProfileImage
-            user={currentUser}
-            className="w-full h-full"
-            showOnlineStatus={false}
-            linkable={false}
-          />
-          <div className="absolute -bottom-1 -right-1 bg-white group-hover:bg-neutral-200 rounded-full p-1 shadow-md transition">
-            <Plus size={12} className="text-black" />
-          </div>
-        </div>
-        <span className="mt-2 text-[11px] text-neutral-400 font-medium group-hover:text-white transition truncate w-16 text-center">
-          Create Story
-        </span>
-      </div>
-
-      {/* Stories List */}
-      <div className="flex space-x-6 overflow-x-auto no-scrollbar">
-        {stories?.map((userStories, index) => (
-          <div
-            key={userStories?.user?._id}
-            onClick={() => handleUserClick(index)}
-            className="flex flex-col items-center cursor-pointer shrink-0 group"
-          >
-            <div
-              className={`p-0.5 rounded-full border-2 transition-all duration-300 ${
-                index === currentUserIndex && showStoryModal
-                  ? "border-white scale-105"
-                  : userStories.hasUnViewed
-                    ? "border-white group-hover:border-neutral-200"
-                    : "border-neutral-800 group-hover:border-neutral-600"
-              }`}
-            >
-              <ProfileImage
-                user={userStories?.user}
-                className="w-14 h-14"
-                showOnlineStatus={false}
-                linkable={false}
-              />
+        {/* Create Story Button */}
+        <div
+          onClick={handleCreateStoryModal}
+          className="shrink-0 flex flex-col items-center cursor-pointer group"
+        >
+          <div className="relative w-16 h-16 rounded-full border border-dashed border-neutral-700 hover:border-white transition-all duration-300 p-0.5 flex items-center justify-center bg-neutral-900/50">
+            <ProfileImage
+              user={currentUser}
+              className="w-full h-full"
+              showOnlineStatus={false}
+              linkable={false}
+            />
+            <div className="absolute -bottom-1 -right-1 bg-white group-hover:bg-neutral-200 rounded-full p-1 shadow-md transition">
+              <Plus size={12} className="text-black" />
             </div>
-            <span className="mt-2 text-[11px] text-neutral-400 font-medium group-hover:text-white transition truncate w-16 text-center">
-              {userStories?.user?._id === currentUser?._id
-                ? "Your story"
-                : userStories?.user?.username}
-            </span>
           </div>
-        ))}
-      </div>
+          <span className="mt-2 text-[11px] text-neutral-400 font-medium group-hover:text-white transition truncate w-16 text-center">
+            Create Story
+          </span>
+        </div>
 
+        {/* Stories List */}
+        <div className="flex space-x-6">
+          {stories?.map((userStories, index) => (
+            <div
+              key={userStories?.user?._id}
+              onClick={() => handleUserClick(index)}
+              className="flex flex-col items-center cursor-pointer shrink-0 group"
+            >
+              <div
+                className={`p-0.5 rounded-full border-2 transition-all duration-300 ${
+                  index === currentUserIndex && showStoryModal
+                    ? "border-white scale-105"
+                    : userStories.hasUnViewed
+                      ? "border-white group-hover:border-neutral-200"
+                      : "border-neutral-800 group-hover:border-neutral-600"
+                }`}
+              >
+                <ProfileImage
+                  user={userStories?.user}
+                  className="w-14 h-14"
+                  showOnlineStatus={false}
+                  linkable={false}
+                />
+              </div>
+              <span className="mt-2 text-[11px] text-neutral-400 font-medium group-hover:text-white transition truncate w-16 text-center">
+                {userStories?.user?._id === currentUser?._id
+                  ? "Your story"
+                  : userStories?.user?.username}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
       {/* Create Story Modal */}
       <Modal
         openModal={isCreateStoryModal}
@@ -685,7 +809,7 @@ const Stories = () => {
           </div>
         </div>
       </Modal>
-    </div>
+    </>
   );
 };
 
