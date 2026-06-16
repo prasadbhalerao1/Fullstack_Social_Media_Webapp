@@ -21,7 +21,7 @@ const LikeButton = ({ type, item, size = 24 }) => {
   return (
     <button
       onClick={handleLike}
-      className="hover:opacity-70 transition cursor-pointer flex items-center justify-center"
+      className="transition-transform duration-200 hover:scale-110 active:scale-95 cursor-pointer flex items-center justify-center"
       title={isLiked ? "Unlike" : "Like"}
     >
       <Heart
