@@ -55,7 +55,10 @@ const VideoModal = ({
     if (video) {
       video.muted = isMutedGlobal;
       if (isOpen && isPlaying) {
-        video.play().catch((err) => console.log("Video auto-play failed:", err));
+        const playPromise = video.play();
+        if (playPromise !== undefined) {
+          playPromise.catch((err) => console.log("Video auto-play failed:", err));
+        }
       } else {
         video.pause();
       }
@@ -69,9 +72,18 @@ const VideoModal = ({
       setIsPlaying(false);
       setShowPlayIcon(true);
     } else {
-      videoRef.current.play().catch((err) => console.log(err));
-      setIsPlaying(true);
-      setShowPlayIcon(true);
+      const playPromise = videoRef.current.play();
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            setIsPlaying(true);
+            setShowPlayIcon(true);
+          })
+          .catch((err) => console.log(err));
+      } else {
+        setIsPlaying(true);
+        setShowPlayIcon(true);
+      }
     }
     setTimeout(() => setShowPlayIcon(false), 600);
   };
