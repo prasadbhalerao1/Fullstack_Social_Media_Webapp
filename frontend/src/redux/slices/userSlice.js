@@ -4,6 +4,7 @@ import { axiosInstance } from "../../lib/axios.js";
 
 const initialState = {
   user: null,
+  selectedUser: null,
   loading: false,
   error: null,
   isAuthenticated: false,
@@ -17,6 +18,9 @@ export const userSlice = createSlice({
       state.user = action.payload;
       state.isAuthenticated = true;
     },
+    setSelectedUser: (state, action) => {
+      state.selectedUser = action.payload;
+    },
     setLoading: (state, action) => {
       state.loading = action.payload;
     },
@@ -26,7 +30,7 @@ export const userSlice = createSlice({
   },
 });
 
-export const { setUser, setLoading, setError } = userSlice.actions;
+export const { setUser, setSelectedUser, setLoading, setError } = userSlice.actions;
 
 export default userSlice.reducer;
 
@@ -141,5 +145,50 @@ export const toggleSavePost = (postId) => async (dispatch) => {
   } catch (error) {
     console.error("Save post error:", error);
     toast.error(error.response?.data?.message || "Failed to save post");
+  }
+};
+
+export const getProfileById = (userId) => async (dispatch) => {
+  dispatch(setLoading(true));
+  try {
+    const { data } = await axiosInstance.get(`/user/${userId}`);
+    if (data.success) {
+      dispatch(setSelectedUser(data.user));
+    }
+  } catch (error) {
+    console.error("Get profile by id error:", error);
+    dispatch(setError(error.response?.data?.message || "Failed to fetch profile"));
+  } finally {
+    dispatch(setLoading(false));
+  }
+};
+
+export const getSuggestedUsers = () => async (dispatch) => {
+  try {
+    const { data } = await axiosInstance.get("/user/suggested");
+    if (data.success) {
+      return data.users;
+    }
+  } catch (error) {
+    console.error("Get suggested users error:", error);
+    return [];
+  }
+};
+
+export const updateUserProfile = (profileData, callback) => async (dispatch) => {
+  dispatch(setLoading(true));
+  try {
+    const { data } = await axiosInstance.put("/user/update", profileData);
+    if (data.success) {
+      dispatch(setUser(data.user));
+      toast.success(data.message || "Profile updated successfully!");
+      if (callback) callback();
+    }
+  } catch (error) {
+    console.error("Update profile error:", error);
+    toast.error(error.response?.data?.message || "Failed to update profile");
+    dispatch(setError(error.response?.data?.message || "Failed to update profile"));
+  } finally {
+    dispatch(setLoading(false));
   }
 };
