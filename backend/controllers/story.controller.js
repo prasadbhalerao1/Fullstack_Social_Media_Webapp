@@ -45,9 +45,9 @@ export const getAllStories = async (req, res) => {
       .sort({ createdAt: -1 });
 
     const storiesByUser = stories.reduce((acc, story) => {
-      const userId = story.user._id;
-      if (!acc[userId]) {
-        acc[userId] = {
+      const creatorId = story.user._id;
+      if (!acc[creatorId]) {
+        acc[creatorId] = {
           user: story.user,
           stories: [],
           hasUnViewed: false,
@@ -57,9 +57,9 @@ export const getAllStories = async (req, res) => {
         (viewer) => viewer._id.toString() === userId.toString(),
       );
       if (!hasViewed) {
-        acc[userId].hasUnViewed = true;
+        acc[creatorId].hasUnViewed = true;
       }
-      acc[userId].stories.push(story);
+      acc[creatorId].stories.push(story);
       return acc;
     }, {});
 

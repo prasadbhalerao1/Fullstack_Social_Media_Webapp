@@ -1,14 +1,14 @@
 import "./App.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import Home from "@/pages/Home";
-import Profile from "@/pages/Profile";
-import Login from "@/pages/Login";
-import Explore from "@/pages/Explore";
-import Reels from "@/pages/Reels";
-import Message from "@/pages/Message";
+import Home from "@/pages/Home.jsx";
+import Profile from "@/pages/Profile.jsx";
+import Login from "@/pages/Login.jsx";
+import Explore from "@/pages/Explore.jsx";
+import Reels from "@/pages/Reels.jsx";
+import Message from "@/pages/Message.jsx";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
-import { getCurrentUser } from "./redux/slices/userSlice";
+import { getCurrentUser } from "./redux/slices/userSlice.js";
 
 function App() {
   const dispatch = useDispatch();

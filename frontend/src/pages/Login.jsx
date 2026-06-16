@@ -1,9 +1,9 @@
 const logo = "/logo.png";
 import { useState, useEffect } from "react";
-import AuthForm from "../components/AuthForm";
+import AuthForm from "@/components/auth/AuthForm.jsx";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { registerUser, loginUser } from "../redux/slices/userSlice";
+import { registerUser, loginUser } from "../redux/slices/userSlice.js";
 
 const Login = () => {
   const dispatch = useDispatch();

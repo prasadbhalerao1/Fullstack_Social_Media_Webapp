@@ -11,12 +11,11 @@ import {
   Bell,
   Plus,
 } from "lucide-react";
-import { logoutUser } from "../redux/slices/userSlice";
-import Modal from "./Modal";
-import CreateMedia from "./CreateMedia";
+import { logoutUser } from "@/redux/slices/userSlice.js";
+import Modal from "@/components/common/Modal.jsx";
+import CreateMedia from "@/components/media/CreateMedia.jsx";
 
 const logo = "/logo.png";
-
 
 const Sidebar = () => {
   const { user: currentUser } = useSelector((state) => state.user);
@@ -55,8 +54,6 @@ const Sidebar = () => {
   const handleOpenModal = (type) => {
     setIsCreateMediaModalOpen(true);
   };
-
-
 
   // Determine active item based on current URL path
   const isActive = (item) => {
@@ -128,7 +125,9 @@ const Sidebar = () => {
                 className={`flex items-center gap-3 p-3 rounded-2xl transition-all duration-300 cursor-pointer justify-center md:justify-start ${activeClass}`}
               >
                 {item.icon}
-                <span className="hidden md:inline font-medium">{item.name}</span>
+                <span className="hidden md:inline font-medium">
+                  {item.name}
+                </span>
               </button>
             );
           })}

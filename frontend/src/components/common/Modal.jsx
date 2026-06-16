@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { X } from "lucide-react";
-import { cn } from "../lib/utils";
+import { cn } from "@/lib/utils.js";
 
 const Modal = ({
   openModal,
@@ -48,7 +48,7 @@ const Modal = ({
           show ? "opacity-100" : "opacity-0"
         }`}
       />
-      
+
       {/* Close Button */}
       {showCloseButton && (
         <button
@@ -58,7 +58,7 @@ const Modal = ({
           <X size={24} />
         </button>
       )}
-      
+
       {/* Modal Box */}
       <div
         className={cn(
@@ -68,7 +68,7 @@ const Modal = ({
           show
             ? "opacity-100 translate-y-0 scale-100 ease-out"
             : "opacity-0 translate-y-8 scale-95 ease-in",
-          className
+          className,
         )}
       >
         {children}

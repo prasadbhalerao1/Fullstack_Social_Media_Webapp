@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
+import { Link } from "react-router-dom";
 import {
   Plus,
   Play,
@@ -12,16 +13,21 @@ import {
   Heart,
   MessageCircle,
   Send,
+  Eye,
+  Trash2,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
-import Modal from "./Modal";
-import CreateMedia from "./CreateMedia";
+import Modal from "@/components/common/Modal.jsx";
+import CreateMedia from "@/components/media/CreateMedia.jsx";
+import ProfileImage from "@/components/common/ProfileImage.jsx";
+import CommentsDrawer from "@/components/common/CommentsDrawer.jsx";
 import {
   getAllStories,
   viewStory,
   toggleLikeStory,
   addCommentToStory,
-} from "../redux/slices/storiesSlice";
+  deleteStory,
+} from "@/redux/slices/storiesSlice.js";
 
 const Stories = () => {
   const { user: currentUser } = useSelector((state) => state.user);
@@ -31,6 +37,7 @@ const Stories = () => {
   const videoRef = useRef(null);
   const progressIntervalRef = useRef(null);
   const commentsModalRef = useRef(null);
+  const viewsModalRef = useRef(null);
 
   // States
   const { stories } = useSelector((state) => state.stories);
@@ -44,6 +51,7 @@ const Stories = () => {
   const [currentStoryIndex, setCurrentStoryIndex] = useState(0);
   const [showStoryModal, setShowStoryModal] = useState(false);
   const [showCommentsModal, setShowCommentsModal] = useState(false);
+  const [showViewsModal, setShowViewsModal] = useState(false);
 
   // Interactive Controls States
   const [commentText, setCommentText] = useState("");
@@ -77,6 +85,7 @@ const Stories = () => {
 
   const handleStorView = (storyId) => {
     if (!storyId) return;
+    if (currentStoryUser?._id === currentUser?._id) return;
     dispatch(viewStory(storyId));
   };
 
@@ -160,15 +169,29 @@ const Stories = () => {
     dispatch(toggleLikeStory(currentStory._id));
   };
 
+  const handleDeleteStory = (storyId) => {
+    if (!storyId) return;
+    if (window.confirm("Are you sure you want to delete this story?")) {
+      dispatch(deleteStory(storyId));
+      const currentStories = stories[currentUserIndex]?.stories || [];
+      if (currentStories.length <= 1) {
+        setShowStoryModal(false);
+      } else {
+        handleNextStory();
+      }
+    }
+  };
+
   const commentModal = () => {
     setShowCommentsModal(true);
   };
 
-  const handleAddCommentToStory = (storyId) => {
+  const handleAddCommentToStory = (storyId, text) => {
     const id = storyId || currentStory?._id;
-    if (!commentText.trim() || !id) return;
-    dispatch(addCommentToStory(id, commentText));
-    setCommentText("");
+    const content = text || commentText;
+    if (!content.trim() || !id) return;
+    dispatch(addCommentToStory(id, content));
+    if (!text) setCommentText("");
   };
 
   // Playback timer & progress management
@@ -179,11 +202,14 @@ const Stories = () => {
       progressIntervalRef.current = null;
     }
 
+    const isPausedByModal = showCommentsModal || showViewsModal;
+    const activePlaying = isPlaying && !isPausedByModal;
+
     if (currentStory.mediaType === "video") {
       const video = videoRef.current;
       if (!video) return;
       video.muted = isMuted;
-      if (isPlaying) {
+      if (activePlaying) {
         video.play().catch((error) => {
           console.log("Video play error:", error);
           setIsPlaying(false);
@@ -191,7 +217,7 @@ const Stories = () => {
       } else {
         video.pause();
       }
-    } else if (currentStory.mediaType === "image" && isPlaying) {
+    } else if (currentStory.mediaType === "image" && activePlaying) {
       const imageDuration = 5000;
       // account for already elapsed progress
       const startTime = Date.now() - (progress / 100) * imageDuration;
@@ -219,6 +245,8 @@ const Stories = () => {
     isPlaying,
     progress,
     isMuted,
+    showCommentsModal,
+    showViewsModal,
     handleNextStory,
     videoRef,
   ]);
@@ -281,6 +309,10 @@ const Stories = () => {
       setProgress(0);
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsPlaying(true);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setShowCommentsModal(false);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setShowViewsModal(false);
       if (progressIntervalRef.current) {
         clearInterval(progressIntervalRef.current);
       }
@@ -294,18 +326,13 @@ const Stories = () => {
         onClick={handleCreateStoryModal}
         className="shrink-0 flex flex-col items-center cursor-pointer group"
       >
-        <div className="relative w-16 h-16 rounded-full border-2 border-dashed border-neutral-700 hover:border-white transition-all duration-300 p-0.5 flex items-center justify-center bg-neutral-900/50">
-          {currentUser?.profileImage ? (
-            <img
-              src={currentUser?.profileImage}
-              alt="profile"
-              className="w-full h-full rounded-full object-cover"
-            />
-          ) : (
-            <div className="w-full h-full rounded-full flex items-center justify-center bg-neutral-800 text-neutral-400 group-hover:text-white transition">
-              <Plus size={18} />
-            </div>
-          )}
+        <div className="relative w-16 h-16 rounded-full border border-dashed border-neutral-700 hover:border-white transition-all duration-300 p-0.5 flex items-center justify-center bg-neutral-900/50">
+          <ProfileImage
+            user={currentUser}
+            className="w-full h-full"
+            showOnlineStatus={false}
+            linkable={false}
+          />
           <div className="absolute -bottom-1 -right-1 bg-white group-hover:bg-neutral-200 rounded-full p-1 shadow-md transition">
             <Plus size={12} className="text-black" />
           </div>
@@ -327,13 +354,16 @@ const Stories = () => {
               className={`p-0.5 rounded-full border-2 transition-all duration-300 ${
                 index === currentUserIndex && showStoryModal
                   ? "border-white scale-105"
-                  : "border-neutral-800 group-hover:border-neutral-600 group-hover:scale-105"
+                  : userStories.hasUnViewed
+                    ? "border-white group-hover:border-neutral-200"
+                    : "border-neutral-800 group-hover:border-neutral-600"
               }`}
             >
-              <img
-                src={userStories?.user?.profileImage || "/default-avatar.png"}
-                alt={userStories?.user?.username}
-                className="w-14 h-14 rounded-full object-cover border border-black"
+              <ProfileImage
+                user={userStories?.user}
+                className="w-14 h-14"
+                showOnlineStatus={false}
+                linkable={false}
               />
             </div>
             <span className="mt-2 text-[11px] text-neutral-400 font-medium group-hover:text-white transition truncate w-16 text-center">
@@ -400,16 +430,28 @@ const Stories = () => {
             {/* User Details and Controls Header */}
             <div className="flex items-center justify-between w-full absolute top-6 left-0 px-4 z-20 bg-linear-to-b from-black/60 to-transparent pb-6">
               <div className="flex items-center gap-2">
-                <img
-                  src={currentStoryUser?.profileImage || "/default-avatar.png"}
-                  className="w-8 h-8 rounded-full border border-white/20 object-cover"
-                  alt=""
+                <ProfileImage
+                  user={currentStoryUser}
+                  className="w-8 h-8"
+                  showOnlineStatus={false}
                 />
-                <span className="text-white font-semibold text-xs tracking-wide">
+                <Link
+                  to={`/profile/${currentStoryUser?._id}`}
+                  className="text-white font-semibold text-xs tracking-wide hover:underline"
+                >
                   {currentStoryUser?.username}
-                </span>
+                </Link>
               </div>
               <div className="flex items-center gap-4 text-white/80 z-30">
+                {currentStoryUser?._id === currentUser?._id && (
+                  <button
+                    onClick={() => handleDeleteStory(currentStory?._id)}
+                    className="text-red-500 hover:text-red-400 transition cursor-pointer p-1"
+                    title="Delete Story"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                )}
                 <button
                   onClick={handlePlayPause}
                   className="hover:text-white transition cursor-pointer"
@@ -531,6 +573,20 @@ const Stories = () => {
                       </span>
                     )}
                   </button>
+                  {/* Views Button (only for owner) */}
+                  {currentStoryUser?._id === currentUser?._id && (
+                    <button
+                      onClick={() => setShowViewsModal(true)}
+                      className="relative flex flex-col items-center hover:opacity-80 transition cursor-pointer"
+                    >
+                      <Eye size={20} className="text-white" />
+                      {currentStory?.viewers?.length > 0 && (
+                        <span className="absolute -top-3 -right-2 text-[9px] text-black font-bold bg-white rounded-full min-h-4 h-4 min-w-4 flex items-center justify-center px-1 shadow">
+                          {currentStory.viewers.length}
+                        </span>
+                      )}
+                    </button>
+                  )}
                 </div>
 
                 {/* Reply Input Box */}
@@ -553,78 +609,69 @@ const Stories = () => {
             </div>
 
             {/* Comments Drawer Modal */}
-            {showCommentsModal && (
+            <CommentsDrawer
+              isOpen={showCommentsModal}
+              onClose={() => setShowCommentsModal(false)}
+              comments={currentStory?.comment || []}
+              onAddComment={(text) =>
+                handleAddCommentToStory(currentStory?._id, text)
+              }
+            />
+
+            {/* Views Drawer Modal */}
+            {showViewsModal && (
               <div
                 className="absolute inset-0 z-100 flex items-end justify-center bg-black/60 backdrop-blur-sm"
-                onClick={() => setShowCommentsModal(false)}
+                onClick={() => setShowViewsModal(false)}
               >
                 <div
-                  ref={commentsModalRef}
+                  ref={viewsModalRef}
                   className="bg-neutral-900 border-t border-white/10 rounded-t-3xl w-full max-h-[75%] flex flex-col shadow-2xl"
                   onClick={(e) => e.stopPropagation()}
                 >
                   {/* Drawer Header */}
                   <div className="flex items-center justify-between p-4 border-b border-white/10">
                     <h3 className="text-md font-semibold text-gray-200">
-                      Comments ({currentStory?.comment?.length || 0})
+                      Views ({currentStory?.viewers?.length || 0})
                     </h3>
                     <button
-                      onClick={() => setShowCommentsModal(false)}
+                      onClick={() => setShowViewsModal(false)}
                       className="p-1.5 text-neutral-400 hover:text-white hover:bg-white/5 rounded-full transition"
                     >
                       <X size={18} />
                     </button>
                   </div>
 
-                  {/* Comments List */}
+                  {/* Viewers List */}
                   <div className="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar">
-                    {currentStory?.comment?.length > 0 ? (
+                    {currentStory?.viewers?.length > 0 ? (
                       <div className="flex flex-col gap-4 text-white">
-                        {currentStory.comment.map((c, i) => (
+                        {currentStory.viewers.map((viewer, i) => (
                           <div
-                            key={c._id || i}
-                            className="flex gap-3 items-start"
+                            key={viewer._id || i}
+                            className="flex gap-3 items-center"
                           >
-                            <img
-                              src={
-                                c.user?.profileImage || "/default-avatar.png"
-                              }
-                              className="w-8 h-8 rounded-full object-cover border border-white/10"
-                              alt=""
+                            <ProfileImage
+                              user={viewer}
+                              className="w-8 h-8"
+                              showOnlineStatus={false}
                             />
-                            <div className="flex-1 flex flex-col bg-white/5 rounded-2xl px-4 py-2 border border-white/5">
-                              <span className="text-xs text-neutral-400 font-bold">
-                                {c.user?.username || "user"}
-                              </span>
-                              <span className="text-sm text-neutral-200 mt-1">
-                                {c.text}
-                              </span>
+                            <div className="flex-1 flex flex-col">
+                              <Link
+                                to={`/profile/${viewer?._id}`}
+                                className="text-sm text-neutral-200 font-semibold hover:underline"
+                              >
+                                {viewer?.username || "user"}
+                              </Link>
                             </div>
                           </div>
                         ))}
                       </div>
                     ) : (
                       <div className="text-center text-neutral-500 py-12 text-sm">
-                        No replies yet. Start the conversation!
+                        No views yet.
                       </div>
                     )}
-                  </div>
-
-                  {/* Inline Comment Input */}
-                  <div className="p-4 border-t border-white/10 flex gap-2 bg-neutral-950/40">
-                    <input
-                      type="text"
-                      value={commentText}
-                      onChange={(e) => setCommentText(e.target.value)}
-                      placeholder="Reply..."
-                      className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-xs focus:outline-none focus:ring-1 focus:ring-white"
-                    />
-                    <button
-                      onClick={() => handleAddCommentToStory(currentStory?._id)}
-                      className="px-4 py-2 bg-white hover:bg-neutral-200 rounded-xl text-black font-semibold text-xs transition"
-                    >
-                      Send
-                    </button>
                   </div>
                 </div>
               </div>

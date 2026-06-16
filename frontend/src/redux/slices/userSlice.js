@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import toast from "react-hot-toast";
-import { axiosInstance } from "../../lib/axios";
+import { axiosInstance } from "../../lib/axios.js";
 
 const initialState = {
   user: null,
@@ -107,11 +107,13 @@ export const updateProfileImage = (userData) => async (dispatch) => {
       toast.success(data?.message || "Profile image updated successfully!");
     }
   } catch (error) {
-    dispatch(setError(error.response?.data?.message || "Failed to update profile image."));
+    dispatch(
+      setError(
+        error.response?.data?.message || "Failed to update profile image.",
+      ),
+    );
     // toast.error(error.response?.data?.message || "Failed to update profile image.");
   } finally {
     dispatch(setLoading(false));
   }
 };
-
-

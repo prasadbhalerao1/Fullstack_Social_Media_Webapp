@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import toast from "react-hot-toast";
-import { axiosInstance } from "../../lib/axios";
+import { axiosInstance } from "../../lib/axios.js";
 
 const initialState = {
   stories: [],
@@ -36,7 +36,13 @@ export const getAllStories = () => async (dispatch) => {
       dispatch(setStories(data?.stories));
     }
   } catch (error) {
-    dispatch(setError(error?.response?.data?.message || error?.message || "Failed to fetch stories."));
+    dispatch(
+      setError(
+        error?.response?.data?.message ||
+          error?.message ||
+          "Failed to fetch stories.",
+      ),
+    );
   } finally {
     dispatch(setLoading(false));
   }
@@ -54,8 +60,18 @@ export const createStory = (formData, callback) => async (dispatch) => {
       if (callback) callback();
     }
   } catch (error) {
-    dispatch(setError(error?.response?.data?.message || error?.message || "Failed to create story."));
-    toast.error(error?.response?.data?.message || error?.message || "Failed to create story.");
+    dispatch(
+      setError(
+        error?.response?.data?.message ||
+          error?.message ||
+          "Failed to create story.",
+      ),
+    );
+    toast.error(
+      error?.response?.data?.message ||
+        error?.message ||
+        "Failed to create story.",
+    );
   } finally {
     dispatch(setLoading(false));
   }
@@ -86,7 +102,9 @@ export const toggleLikeStory = (storyId) => async (dispatch) => {
 
 export const addCommentToStory = (storyId, commentText) => async (dispatch) => {
   try {
-    const { data } = await axiosInstance.post(`/story/${storyId}/comment`, { text: commentText });
+    const { data } = await axiosInstance.post(`/story/${storyId}/comment`, {
+      text: commentText,
+    });
     if (data?.success) {
       toast.success("Comment added!");
       dispatch(getAllStories());
@@ -105,8 +123,18 @@ export const deleteStory = (storyId) => async (dispatch) => {
       dispatch(getAllStories());
     }
   } catch (error) {
-    dispatch(setError(error?.response?.data?.message || error?.message || "Failed to delete story."));
-    toast.error(error?.response?.data?.message || error?.message || "Failed to delete story.");
+    dispatch(
+      setError(
+        error?.response?.data?.message ||
+          error?.message ||
+          "Failed to delete story.",
+      ),
+    );
+    toast.error(
+      error?.response?.data?.message ||
+        error?.message ||
+        "Failed to delete story.",
+    );
   } finally {
     dispatch(setLoading(false));
   }

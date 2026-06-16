@@ -1,5 +1,5 @@
-import Sidebar from "../components/Sidebar.jsx";
-import Stories from "../components/Stories.jsx";
+import Sidebar from "@/components/layout/Sidebar.jsx";
+import Stories from "@/components/stories/Stories.jsx";
 
 const Home = () => {
   return (

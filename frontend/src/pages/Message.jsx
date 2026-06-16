@@ -1,4 +1,4 @@
-import Sidebar from "../components/Sidebar.jsx";
+import Sidebar from "@/components/layout/Sidebar.jsx";
 
 const Message = () => {
   return (

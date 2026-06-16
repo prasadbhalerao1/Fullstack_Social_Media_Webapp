@@ -10,9 +10,9 @@ import {
   Volume2,
   VolumeX,
 } from "lucide-react";
-import { axiosInstance } from "../lib/axios";
+import { axiosInstance } from "@/lib/axios.js";
 import { toast } from "react-hot-toast";
-import { getAllStories } from "../redux/slices/storiesSlice";
+import { getAllStories } from "@/redux/slices/storiesSlice.js";
 
 const CreateMedia = ({ type = "post", onClose, onUploadSuccess }) => {
   const dispatch = useDispatch();
@@ -27,7 +27,7 @@ const CreateMedia = ({ type = "post", onClose, onUploadSuccess }) => {
   const [isDraging, setIsDraging] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
-  
+
   const fileInputRef = useRef(null);
   const videoRef = useRef(null);
 
@@ -75,15 +75,15 @@ const CreateMedia = ({ type = "post", onClose, onUploadSuccess }) => {
       if (currentType !== "story") formData.append("caption", caption);
       formData.append(
         "mediaType",
-        file.type.startsWith("video/") ? "video" : "image"
+        file.type.startsWith("video/") ? "video" : "image",
       );
 
       const apiEndpoint =
         currentType === "story"
           ? "/story/create"
           : currentType === "post"
-          ? "/post/create"
-          : "/reel/create";
+            ? "/post/create"
+            : "/reel/create";
 
       const { data } = await axiosInstance.post(apiEndpoint, formData, {
         headers: { "Content-Type": "multipart/form-data" },
@@ -144,7 +144,9 @@ const CreateMedia = ({ type = "post", onClose, onUploadSuccess }) => {
   return (
     <div className="flex w-full flex-col items-center gap-6 p-6 font-sans text-white bg-neutral-950/80 rounded-2xl border border-white/5">
       <div className="flex flex-col items-center gap-4 w-full">
-        <h2 className="text-xl font-bold tracking-wide">{titleMap[currentType]}</h2>
+        <h2 className="text-xl font-bold tracking-wide">
+          {titleMap[currentType]}
+        </h2>
         {type !== "story" && (
           <div className="flex gap-3 w-full max-w-sm">
             <button
@@ -173,7 +175,10 @@ const CreateMedia = ({ type = "post", onClose, onUploadSuccess }) => {
         )}
       </div>
 
-      <form onSubmit={handleUpload} className="space-y-5 w-full flex flex-col items-center">
+      <form
+        onSubmit={handleUpload}
+        className="space-y-5 w-full flex flex-col items-center"
+      >
         {/* Drag Over Area */}
         <div
           onDragOver={handleDragOver}
@@ -192,9 +197,11 @@ const CreateMedia = ({ type = "post", onClose, onUploadSuccess }) => {
                 <Upload size={24} />
               </div>
               <p className="text-sm font-medium">
-                {isDraging ? "Drop your file here..." : "Click or Drag & Drop file"}
+                {isDraging
+                  ? "Drop your file here..."
+                  : "Click or Drag & Drop file"}
               </p>
-              
+
               {/* Image & Video side-by-side indicator */}
               <div className="flex items-center gap-6 text-[11px] font-semibold tracking-wide text-neutral-500 pt-2">
                 <div className="flex items-center gap-1.5">
@@ -225,7 +232,7 @@ const CreateMedia = ({ type = "post", onClose, onUploadSuccess }) => {
                         video.pause();
                         setIsPlaying(false);
                       } else {
-                        video.play().catch(err => console.log(err));
+                        video.play().catch((err) => console.log(err));
                         setIsPlaying(true);
                       }
                     }}
@@ -242,7 +249,7 @@ const CreateMedia = ({ type = "post", onClose, onUploadSuccess }) => {
                           video.pause();
                           setIsPlaying(false);
                         } else {
-                          video.play().catch(err => console.log(err));
+                          video.play().catch((err) => console.log(err));
                           setIsPlaying(true);
                         }
                       }}
@@ -299,7 +306,9 @@ const CreateMedia = ({ type = "post", onClose, onUploadSuccess }) => {
         {/* Caption for post & reel */}
         {currentType !== "story" && (
           <div className="w-full text-left">
-            <label className="text-xs font-semibold text-neutral-400 mb-1.5 block">Caption</label>
+            <label className="text-xs font-semibold text-neutral-400 mb-1.5 block">
+              Caption
+            </label>
             <input
               type="text"
               value={caption}
