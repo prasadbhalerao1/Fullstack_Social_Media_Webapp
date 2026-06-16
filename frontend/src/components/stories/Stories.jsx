@@ -88,6 +88,29 @@ const Stories = () => {
     };
   }, [stories]);
 
+  // Handle click outside to close modals simultaneously
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (isCreateStoryModal || showStoryModal || showCommentsModal) {
+        const backdropClasses = ["fixed", "absolute", "inset-0", "bg-black/60", "bg-black/80"];
+        const isBackdropClick = backdropClasses.some(cls => 
+          event.target.classList.contains(cls)
+        ) || event.target.getAttribute("role") === "dialog";
+
+        if (isBackdropClick) {
+          setIsCreateStoryModal(false);
+          setShowStoryModal(false);
+          setShowCommentsModal(false);
+        }
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showStoryModal, isCreateStoryModal, showCommentsModal]);
+
   const handleMouseDown = (e) => {
     const slider = scrollRef.current;
     if (!slider) return;
