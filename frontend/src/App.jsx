@@ -1,4 +1,3 @@
-import "./App.css";
 import {
   createBrowserRouter,
   RouterProvider,
@@ -15,6 +14,17 @@ import { useDispatch, useSelector } from "react-redux";
 import { Loader2 } from "lucide-react";
 import { getCurrentUser } from "./redux/slices/userSlice.js";
 import { SocketProvider } from "@/context/SocketContext.jsx";
+import BottomNav from "@/components/layout/BottomNav.jsx";
+import NotificationsDrawer from "@/components/common/NotificationsDrawer.jsx";
+
+// Wraps every authenticated page with the mobile bottom nav
+const AppLayout = ({ children }) => (
+  <>
+    {children}
+    <BottomNav />
+    <NotificationsDrawer />
+  </>
+);
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useSelector((state) => state.user);
@@ -31,7 +41,7 @@ const ProtectedRoute = ({ children }) => {
     return <Navigate to="/login" replace />;
   }
 
-  return children;
+  return <AppLayout>{children}</AppLayout>;
 };
 
 function App() {

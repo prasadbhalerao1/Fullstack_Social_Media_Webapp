@@ -23,7 +23,7 @@ const Profile = () => {
   const {
     user: currentUser,
     selectedUser,
-    loading,
+    profileLoading,
   } = useSelector((state) => state.user);
   const { posts: allPosts } = useSelector((state) => state.posts);
 
@@ -32,25 +32,26 @@ const Profile = () => {
   const [imageUploading, setImageUploading] = useState(false);
   const [dmLoading, setDmLoading] = useState(false);
 
-  const isOwnProfile = currentUser?._id === id;
+  const targetId = id === "me" ? currentUser?._id : id;
+  const isOwnProfile = id === "me" || (currentUser?._id && currentUser._id === id);
 
   useEffect(() => {
-    if (id) {
-      dispatch(getProfileById(id));
+    if (targetId) {
+      dispatch(getProfileById(targetId));
     }
-  }, [id, dispatch]); // reload when target user id changes
+  }, [targetId, dispatch]); // reload when target user id changes
 
   // Verify current user vs viewed profile data on mount/change
   useEffect(() => {
     console.log("Profile Component Mounting/Loaded Social Graph:", {
       currentUser: currentUser ? currentUser._id : null,
       currentUsername: currentUser ? currentUser.username : null,
-      profileId: id,
+      profileId: targetId || id,
       profileUser: selectedUser ? selectedUser._id : null,
       profileUsername: selectedUser ? selectedUser.username : null,
       isOwnProfile,
     });
-  }, [currentUser, selectedUser, id, isOwnProfile]);
+  }, [currentUser, selectedUser, id, targetId, isOwnProfile]);
 
   // Fetch all posts to keep the modal details in sync when comments/likes are toggled
   useEffect(() => {
@@ -77,7 +78,7 @@ const Profile = () => {
 
     try {
       await dispatch(updateProfileImage(formData));
-      if (id) dispatch(getProfileById(id)); // refresh profile
+      if (targetId) dispatch(getProfileById(targetId)); // refresh profile
     } catch (err) {
       console.error(err);
     } finally {
@@ -93,11 +94,11 @@ const Profile = () => {
     if (conv) navigate("/chats");
   };
 
-  if (loading && !selectedUser) {
+  if (profileLoading && !selectedUser) {
     return (
       <div className="bg-black flex text-white min-h-screen">
         <Sidebar />
-        <main className="flex-1 flex justify-center items-center">
+        <main className="flex-1 flex justify-center items-center pb-20 md:pb-0">
           <Loader2 className="animate-spin text-white w-10 h-10" />
         </main>
       </div>
@@ -108,7 +109,7 @@ const Profile = () => {
     return (
       <div className="bg-black flex text-white min-h-screen">
         <Sidebar />
-        <main className="flex-1 flex flex-col justify-center items-center gap-4">
+        <main className="flex-1 flex flex-col justify-center items-center gap-4 pb-20 md:pb-0">
           <p className="text-neutral-400 text-sm">User profile not found.</p>
           <Link
             to="/"
@@ -126,7 +127,7 @@ const Profile = () => {
   return (
     <div className="bg-black/95 flex text-white min-h-screen">
       <Sidebar />
-      <main className="flex-1 overflow-y-auto px-4 py-8 md:py-12 md:px-8 max-w-4xl mx-auto font-sans select-none">
+      <main className="flex-1 overflow-y-auto px-3 sm:px-4 py-6 md:py-12 md:px-8 max-w-4xl mx-auto font-sans select-none pb-20 md:pb-12">
         {/* Profile Header */}
         <div className="flex flex-col md:flex-row gap-8 md:gap-16 border-b border-white/10 pb-10 items-center md:items-start">
           {/* Avatar Container */}
@@ -307,7 +308,7 @@ const Profile = () => {
           post={currentModalPost}
           currentUser={currentUser}
           onDelete={() => {
-            if (id) dispatch(getProfileById(id)); // refresh profile posts list
+            if (targetId) dispatch(getProfileById(targetId)); // refresh profile posts list
           }}
         />
       )}

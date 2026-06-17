@@ -34,9 +34,9 @@ const Explore = () => {
   return (
     <div className="bg-black/95 flex text-white min-h-screen">
       <Sidebar />
-      <main className="flex-1 overflow-y-auto px-4 py-8 max-w-5xl mx-auto flex flex-col gap-6 font-sans select-none">
+      <main className="flex-1 overflow-y-auto px-4 py-6 md:py-8 max-w-5xl mx-auto flex flex-col gap-6 font-sans select-none pb-20 md:pb-8">
         {/* Search Bar */}
-        <div className="relative max-w-sm">
+        <div className="relative w-full md:max-w-sm">
           <Search
             size={16}
             className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500"

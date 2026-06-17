@@ -150,9 +150,9 @@ const CreateMedia = ({ type = "post", onClose, onUploadSuccess }) => {
   };
 
   return (
-    <div className="flex w-full flex-col items-center gap-6 p-6 font-sans text-white bg-neutral-950/80 rounded-2xl border border-white/5">
+    <div className="flex w-full flex-col items-center gap-4 sm:gap-6 p-4 sm:p-6 font-sans text-white bg-neutral-950/80 rounded-2xl border border-white/5">
       <div className="flex flex-col items-center gap-4 w-full">
-        <h2 className="text-xl font-bold tracking-wide">
+        <h2 className="text-lg sm:text-xl font-bold tracking-wide">
           {titleMap[currentType]}
         </h2>
         {type !== "story" && (
@@ -185,7 +185,7 @@ const CreateMedia = ({ type = "post", onClose, onUploadSuccess }) => {
 
       <form
         onSubmit={handleUpload}
-        className="space-y-5 w-full flex flex-col items-center"
+        className="space-y-4 sm:space-y-5 w-full flex flex-col items-center"
       >
         {/* Drag Over Area */}
         <div
@@ -193,7 +193,7 @@ const CreateMedia = ({ type = "post", onClose, onUploadSuccess }) => {
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
           onClick={!previewUrl ? handleClickDropArea : undefined}
-          className={`w-full h-56 rounded-2xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer relative overflow-hidden transition-all duration-300 ${
+          className={`w-full h-44 sm:h-56 rounded-2xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer relative overflow-hidden transition-all duration-300 ${
             isDraging
               ? "border-white bg-white/5"
               : "border-neutral-700 hover:border-white bg-neutral-900/30"

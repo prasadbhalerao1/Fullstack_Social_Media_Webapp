@@ -18,6 +18,42 @@ export const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [lastSeenMap, setLastSeenMap] = useState({});
+  const [notifications, setNotifications] = useState([]);
+
+  useEffect(() => {
+    if (user) {
+      const stored = localStorage.getItem(`notifications_${user._id}`);
+      if (stored) {
+        try {
+          // eslint-disable-next-line react-hooks/set-state-in-effect
+          setNotifications(JSON.parse(stored));
+        } catch {
+          setNotifications([]);
+        }
+      } else {
+        setNotifications([]);
+      }
+    } else {
+      setNotifications([]);
+    }
+  }, [user]);
+
+  const markAllAsRead = () => {
+    setNotifications((prev) => {
+      const updated = prev.map((n) => ({ ...n, read: true }));
+      if (user) {
+        localStorage.setItem(`notifications_${user._id}`, JSON.stringify(updated));
+      }
+      return updated;
+    });
+  };
+
+  const clearNotifications = () => {
+    setNotifications([]);
+    if (user) {
+      localStorage.removeItem(`notifications_${user._id}`);
+    }
+  };
 
   useEffect(() => {
     if (!user) {
@@ -49,6 +85,19 @@ export const SocketProvider = ({ children }) => {
           color: "#fff",
           border: "1px solid rgba(255, 255, 255, 0.1)",
         },
+      });
+
+      const newNotif = {
+        id: Math.random().toString(36).substring(2, 9),
+        message,
+        createdAt: new Date().toISOString(),
+        read: false,
+      };
+
+      setNotifications((prev) => {
+        const updated = [newNotif, ...prev];
+        localStorage.setItem(`notifications_${user._id}`, JSON.stringify(updated));
+        return updated;
       });
     };
 
@@ -85,7 +134,16 @@ export const SocketProvider = ({ children }) => {
 
   return (
     <SocketContext.Provider
-      value={{ socket, onlineUsers, lastSeenMap, isOnline }}
+      value={{
+        socket,
+        onlineUsers,
+        lastSeenMap,
+        isOnline,
+        notifications,
+        unreadCount: notifications.filter((n) => !n.read).length,
+        markAllAsRead,
+        clearNotifications,
+      }}
     >
       {children}
     </SocketContext.Provider>

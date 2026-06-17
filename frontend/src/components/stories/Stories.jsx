@@ -19,7 +19,7 @@ import {
 import Modal from "@/components/common/Modal.jsx";
 import CreateMedia from "@/components/media/CreateMedia.jsx";
 import ProfileImage from "@/components/common/ProfileImage.jsx";
-import CommentsDrawer from "./CommentsDrawer.jsx";
+import CommentsDrawer from "@/components/common/CommentsDrawer.jsx";
 import { timeAgo } from "@/lib/timeAgo.js";
 import {
   getAllStories,
@@ -552,19 +552,18 @@ const Stories = () => {
         }}
       />
 
-      {/* View Story Modal */}
       <Modal
         openModal={showStoryModal}
         onClose={() => setShowStoryModal(false)}
         showCloseButton={false}
-        initialWidth="max-w-[420px]"
-        initialHeight="h-auto"
-        className="p-0 border-none bg-transparent shadow-none"
+        initialWidth="w-full sm:max-w-[420px]"
+        initialHeight="h-full sm:h-auto"
+        className="w-full sm:w-[90%] h-full sm:h-auto p-0 border-none bg-transparent shadow-none !rounded-none sm:!rounded-2xl"
       >
-        <div className="relative w-full flex flex-col items-center">
+        <div className="relative w-full h-full flex flex-col items-center">
           {/* The close button was removed from here per user request */}
 
-          <div className="w-full bg-black rounded-2xl overflow-hidden relative aspect-9/16 max-h-[85vh] flex flex-col justify-center border border-white/10">
+          <div className="w-full h-full sm:h-auto bg-black overflow-hidden relative sm:aspect-9/16 max-h-[100dvh] sm:max-h-[85vh] flex flex-col justify-center border-0 sm:border sm:border-white/10 sm:rounded-2xl">
             {/* Progress Indicators */}
             <div className="flex gap-1.5 w-full absolute top-3 left-0 px-4 z-20">
               {currentUserStories.map((_, idx) => {

@@ -92,10 +92,10 @@ const PostDetailsModal = ({ post, currentUser, isOpen, onClose, onDelete }) => {
       openModal={isOpen}
       onClose={onClose}
       initialWidth="max-w-5xl"
-      initialHeight="h-[80vh]"
+      initialHeight="h-[92vh] md:h-[80vh]"
       className="md:flex-row rounded-lg overflow-hidden border border-neutral-800"
     >
-      <div className="flex flex-col md:flex-row w-full h-full">
+      <div className="flex flex-col md:flex-row w-full h-full overflow-y-auto md:overflow-hidden no-scrollbar">
         {/* Left Side: Media */}
         <Media
           item={post}
@@ -105,12 +105,12 @@ const PostDetailsModal = ({ post, currentUser, isOpen, onClose, onDelete }) => {
           showPlayIcon={showPlayIcon}
           handleVideoClick={handleVideoClick}
           handleMuteToggle={handleMuteToggle}
-          containerClassName="flex-1 h-[40vh] md:h-full"
+          containerClassName="w-full h-auto aspect-square flex-none md:aspect-auto md:flex-1 md:h-full"
           mediaClassName="w-full h-full object-contain"
         />
 
         {/* Right Side: Details */}
-        <div className="w-full md:w-87.5 flex flex-col bg-black border-l border-white/10 h-[40vh] md:h-full">
+        <div className="w-full md:w-87.5 flex flex-col bg-black md:border-l border-white/10 flex-none md:flex-1 md:h-full md:overflow-hidden overflow-visible">
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
             <div className="flex items-center gap-3">
@@ -143,7 +143,7 @@ const PostDetailsModal = ({ post, currentUser, isOpen, onClose, onDelete }) => {
           </div>
 
           {/* Comments Section */}
-          <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4 scrollbar-hide">
+          <div className="flex-none md:flex-1 md:overflow-y-auto p-4 flex flex-col gap-4 scrollbar-hide overflow-visible">
             {/* Caption (Treat as first comment) */}
             {post?.caption && (
               <div className="flex gap-3">

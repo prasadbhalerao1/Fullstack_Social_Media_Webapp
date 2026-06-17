@@ -12,14 +12,15 @@ import {
   Plus,
 } from "lucide-react";
 import { logoutUser } from "@/redux/slices/userSlice.js";
+import { useSocket } from "@/context/SocketContext.jsx";
 import Modal from "@/components/common/Modal.jsx";
 import CreateMedia from "@/components/media/CreateMedia.jsx";
 
 const logo = "/logo.png";
 
 const Sidebar = () => {
-  const { user: currentUser } = useSelector((state) => state.user);
   const { conversations } = useSelector((state) => state.messages);
+  const { unreadCount, setIsNotificationsOpen } = useSocket();
   const dispatch = useDispatch();
   const location = useLocation();
   const navigate = useNavigate();
@@ -53,10 +54,10 @@ const Sidebar = () => {
       id: "profile",
       name: "Profile",
       icon: <User size={20} />,
-      path: `/profile/${currentUser?._id}`,
+      path: "/profile/me",
     },
     { id: "logout", name: "Logout", icon: <LogOut size={20} /> },
-    { id: "notifications", name: "Notifications", icon: <Bell size={20} /> },
+    { id: "notifications", name: "Notifications", icon: <Bell size={20} />, badge: unreadCount },
   ];
 
   // Determine active item based on current URL path
@@ -70,7 +71,7 @@ const Sidebar = () => {
 
   return (
     <>
-      <aside className="sticky top-0 left-0 h-screen z-50 w-20 md:w-64 p-4 flex flex-col gap-6 border-r border-white/10 backdrop-blur-xl bg-black rounded-tr-3xl rounded-br-3xl shadow-2xl">
+      <aside className="hidden md:flex sticky top-0 left-0 h-screen z-50 w-20 md:w-64 p-4 flex-col gap-6 border-r border-white/10 backdrop-blur-xl bg-black rounded-tr-3xl rounded-br-3xl shadow-2xl">
         {/* Logo Section */}
         <div className="px-2 py-4">
           <Link to="/" className="flex items-center gap-3">
@@ -125,6 +126,31 @@ const Sidebar = () => {
                     {item.name}
                   </span>
                 </Link>
+              );
+            }
+
+            if (item.id === "notifications") {
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => {
+                    setActive(item.id);
+                    setIsNotificationsOpen(true);
+                  }}
+                  className={`relative flex items-center gap-3 p-3 rounded-2xl transition-all duration-300 cursor-pointer justify-center md:justify-start ${activeClass}`}
+                >
+                  <div className="relative">
+                    {item.icon}
+                    {item.badge > 0 && (
+                      <span className="absolute -top-1.5 -right-1.5 min-w-4 h-4 px-0.5 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center leading-none">
+                        {item.badge > 99 ? "99+" : item.badge}
+                      </span>
+                    )}
+                  </div>
+                  <span className="hidden md:inline font-medium">
+                    {item.name}
+                  </span>
+                </button>
               );
             }
 

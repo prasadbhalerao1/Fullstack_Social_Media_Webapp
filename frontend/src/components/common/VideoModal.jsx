@@ -17,6 +17,7 @@ import Modal from "@/components/common/Modal.jsx";
 import ProfileImage from "@/components/common/ProfileImage.jsx";
 import FollowButton from "@/components/common/FollowButton.jsx";
 import CommentForm from "@/components/common/CommentForm.jsx";
+import CommentsDrawer from "@/components/common/CommentsDrawer.jsx";
 import {
   toggleLikeReel,
   addCommentToReel,
@@ -40,6 +41,7 @@ const VideoModal = ({
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [isPlaying, setIsPlaying] = useState(true);
   const [showPlayIcon, setShowPlayIcon] = useState(false);
+  const [showCommentsDrawer, setShowCommentsDrawer] = useState(false);
 
   const currentReel = reels[currentIndex];
   const isOwner = currentUser?._id === currentReel?.user?._id;
@@ -157,13 +159,13 @@ const VideoModal = ({
       openModal={isOpen}
       onClose={onClose}
       showCloseButton={false}
-      initialWidth="max-w-4xl"
-      initialHeight="h-[85vh]"
-      className="md:flex-row rounded-2xl overflow-hidden border border-white/10 p-0 shadow-2xl bg-neutral-950"
+      initialWidth="w-full sm:max-w-4xl"
+      initialHeight="h-full sm:h-[85vh]"
+      className="md:flex-row rounded-none sm:rounded-2xl overflow-hidden border-0 sm:border border-white/10 p-0 shadow-2xl bg-neutral-950"
     >
       <div className="flex flex-col md:flex-row w-full h-full relative select-none">
         {/* Left Side: Video Content */}
-        <div className="flex-1 bg-black relative flex items-center justify-center h-[50vh] md:h-full group">
+        <div className="flex-1 bg-black relative flex items-center justify-center h-full md:h-full group">
           <div
             onClick={handleVideoClick}
             className="relative w-full h-full cursor-pointer flex items-center justify-center"
@@ -219,17 +221,95 @@ const VideoModal = ({
             </button>
           )}
 
-          {/* Top Close button for Modal */}
+          {/* Top Close button for Modal on Mobile */}
           <button
             onClick={onClose}
             className="absolute top-4 left-4 bg-neutral-900/80 hover:bg-neutral-800 text-white rounded-full p-2 border border-white/5 transition z-30 cursor-pointer md:hidden"
           >
             <X size={18} />
           </button>
+
+          {/* Mobile Overlays — md:hidden */}
+          <div className="absolute inset-0 z-20 pointer-events-none md:hidden flex flex-col justify-between p-4 bg-linear-to-b from-black/40 via-transparent to-black/60">
+            {/* Top row */}
+            <div className="flex justify-between items-center pointer-events-auto mt-12 w-full">
+              <div className="flex items-center gap-2">
+                <ProfileImage
+                  user={currentReel.user}
+                  className="w-8 h-8"
+                  showOnlineStatus={false}
+                />
+                <Link
+                  to={`/profile/${currentReel.user?._id}`}
+                  className="font-bold text-xs text-white hover:underline tracking-wide shadow-sm"
+                >
+                  {currentReel.user?.username}
+                </Link>
+                <FollowButton
+                  targetId={currentReel.user?._id}
+                  currentUser={currentUser}
+                />
+              </div>
+            </div>
+
+            {/* Bottom controls & info row */}
+            <div className="flex justify-between items-end pointer-events-auto mb-6 w-full">
+              {/* Caption */}
+              <div className="flex-1 max-w-[75%] text-left">
+                {currentReel.caption && (
+                  <p className="text-white text-xs font-semibold drop-shadow-md whitespace-pre-wrap leading-relaxed">
+                    {currentReel.caption}
+                  </p>
+                )}
+              </div>
+
+              {/* Right side floating reactions */}
+              <div className="flex flex-col gap-4 items-center bg-black/30 backdrop-blur-xs py-3 px-2 rounded-full border border-white/5">
+                {/* Like */}
+                <button
+                  onClick={handleLike}
+                  className="flex flex-col items-center gap-1 group/btn cursor-pointer"
+                >
+                  <div className="bg-black/50 hover:bg-black/80 rounded-full p-2.5 transition border border-white/5">
+                    <Heart
+                      size={18}
+                      className={
+                        isLiked ? "fill-red-500 text-red-500" : "text-white"
+                      }
+                      strokeWidth={2.5}
+                    />
+                  </div>
+                  <span className="text-[10px] font-bold text-white shadow-sm">
+                    {currentReel.likes?.length || 0}
+                  </span>
+                </button>
+
+                {/* Comment */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowCommentsDrawer(true);
+                  }}
+                  className="flex flex-col items-center gap-1 group/btn cursor-pointer"
+                >
+                  <div className="bg-black/50 hover:bg-black/80 rounded-full p-2.5 transition border border-white/5">
+                    <MessageCircle
+                      size={18}
+                      className="text-white"
+                      strokeWidth={2.5}
+                    />
+                  </div>
+                  <span className="text-[10px] font-bold text-white shadow-sm">
+                    {currentReel.comment?.length || 0}
+                  </span>
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Right Side: Reels details & comments */}
-        <div className="w-full md:w-90 flex flex-col bg-neutral-950 border-t md:border-t-0 md:border-l border-white/10 h-[35vh] md:h-full">
+        {/* Right Side: Reels details & comments (Desktop only) */}
+        <div className="hidden md:flex w-full md:w-90 flex-col bg-neutral-950 border-t md:border-t-0 md:border-l border-white/10 h-[35vh] md:h-full">
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3.5 border-b border-white/10">
             <div className="flex items-center gap-3">
@@ -382,6 +462,15 @@ const VideoModal = ({
           </div>
         </div>
       </div>
+
+      {/* Mobile Comments Drawer */}
+      <CommentsDrawer
+        isOpen={showCommentsDrawer}
+        onClose={() => setShowCommentsDrawer(false)}
+        comments={currentReel.comment || []}
+        onAddComment={handleCommentSubmit}
+        title="Comments"
+      />
     </Modal>
   );
 };

@@ -41,7 +41,7 @@ const Modal = ({
   if (!mounted) return null;
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-50">
+    <div className="fixed inset-0 flex items-center justify-center z-[100]">
       {/* Backdrop */}
       <div
         onClick={onClose}
@@ -54,21 +54,21 @@ const Modal = ({
       {showCloseButton && (
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 z-50 text-neutral-400 hover:text-white hover:scale-110 transition duration-200 cursor-pointer p-1 bg-neutral-900/50 hover:bg-neutral-900 rounded-full border border-white/5"
+          className="absolute top-3 right-3 sm:top-4 sm:right-4 z-50 text-neutral-400 hover:text-white hover:scale-110 transition duration-200 cursor-pointer p-2 bg-neutral-900/80 hover:bg-neutral-900 rounded-full border border-white/10 shadow-lg shadow-black/50"
         >
-          <X size={24} />
+          <X size={18} className="sm:w-5 sm:h-5" />
         </button>
       )}
 
       {/* Modal Box */}
       <div
         className={cn(
-          "relative flex flex-col bg-neutral-950/95 border border-white/10 rounded-2xl shadow-2xl overflow-hidden w-[90%] transform transition-all duration-300 z-10",
+          "relative flex flex-col bg-neutral-950/95 border border-white/10 rounded-2xl shadow-2xl overflow-hidden w-[95%] sm:w-[90%] transform transition-all duration-300 z-10",
           initialWidth,
           initialHeight,
           show
             ? "opacity-100 translate-y-0 scale-100 ease-out"
-            : "opacity-0 translate-y-8 scale-95 ease-in",
+            : "opacity-0 translate-y-4 sm:translate-y-8 scale-95 ease-in",
           className,
         )}
       >

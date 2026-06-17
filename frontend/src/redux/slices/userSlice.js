@@ -7,6 +7,7 @@ const initialState = {
   user: null,
   selectedUser: null,
   loading: false,
+  profileLoading: false,
   error: null,
   isAuthenticated: false,
   socket: null, // Track socket connection globally
@@ -25,6 +26,9 @@ export const userSlice = createSlice({
     },
     setLoading: (state, action) => {
       state.loading = action.payload;
+    },
+    setProfileLoading: (state, action) => {
+      state.profileLoading = action.payload;
     },
     setError: (state, action) => {
       state.error = action.payload;
@@ -80,6 +84,7 @@ export const {
   setUser,
   setSelectedUser,
   setLoading,
+  setProfileLoading,
   setError,
   setSocket,
   setSavedPost,
@@ -255,7 +260,7 @@ export const toggleSavePost = (postId) => async (dispatch) => {
 };
 
 export const getProfileById = (userId) => async (dispatch) => {
-  dispatch(setLoading(true));
+  dispatch(setProfileLoading(true));
   try {
     const { data } = await axiosInstance.get(`/user/${userId}`);
     if (data.success) {
@@ -267,7 +272,7 @@ export const getProfileById = (userId) => async (dispatch) => {
       setError(error.response?.data?.message || "Failed to fetch profile"),
     );
   } finally {
-    dispatch(setLoading(false));
+    dispatch(setProfileLoading(false));
   }
 };
 

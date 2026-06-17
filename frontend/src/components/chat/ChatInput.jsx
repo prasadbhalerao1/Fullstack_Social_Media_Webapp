@@ -230,8 +230,8 @@ const ChatInput = ({ conversationId, receiverId, isBlocked }) => {
             </button>
 
             {showEmojiPicker && (
-              <div className="absolute bottom-12 left-0 bg-neutral-900 border border-white/10 rounded-2xl p-3 shadow-2xl z-50 w-64">
-                <div className="grid grid-cols-6 gap-2">
+              <div className="absolute bottom-12 left-0 sm:left-0 -translate-x-0 sm:translate-x-0 max-[480px]:-translate-x-2 bg-neutral-900 border border-white/10 rounded-2xl p-3 shadow-2xl z-50 w-60 sm:w-64">
+                <div className="grid grid-cols-7 gap-1 sm:grid-cols-6 sm:gap-2">
                   {COMMON_EMOJIS.map((emoji) => (
                     <button
                       key={emoji}

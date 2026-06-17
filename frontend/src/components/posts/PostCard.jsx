@@ -97,7 +97,7 @@ const PostCard = ({ post, currentUser }) => {
   }, [post?.mediaType, showPostModal, isMuted]);
 
   return (
-    <div className="w-full max-w-117.5 mx-auto bg-black border-b border-white/10 sm:border sm:border-white/10 sm:rounded-xl mb-6 pb-4 sm:pb-0">
+    <div className="w-full bg-black border-b border-white/10 sm:border sm:border-white/10 sm:rounded-xl sm:mb-4 mb-0 pb-4 sm:pb-0">
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-3">
         <div className="flex items-center gap-3">
