@@ -13,6 +13,8 @@ import {
   unfollowUser,
   getFollowers,
   getFollowing,
+  forgotPassword,
+  resetPassword,
 } from "../controllers/user.controller.js";
 import { authMiddleware } from "../middleware/auth.middleware.js";
 import uploadCloudinary from "../middleware/cloudinaryUpload.js";
@@ -29,6 +31,8 @@ router.post("/follow", authMiddleware, followUser);
 router.post("/unfollow", authMiddleware, unfollowUser);
 router.get("/:id/followers", authMiddleware, getFollowers);
 router.get("/:id/following", authMiddleware, getFollowing);
+router.post("/forgot-password", forgotPassword);
+router.post("/reset-password", resetPassword);
 
 router.post(
   "/upload-profile",

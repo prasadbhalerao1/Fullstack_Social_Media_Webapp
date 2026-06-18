@@ -1,7 +1,10 @@
 import User from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
 import { getIO } from "../socket/socket.js";
+import { sendEmail } from "../utils/mailer.js";
+import { getPasswordResetTemplate } from "../utils/emailTemplates.js";
 
 const isProduction = process.env.NODE_ENV === "production";
 
@@ -27,18 +30,30 @@ export const registerUser = async (req, res) => {
     }
 
     const normalizedEmail = email.toLowerCase().trim();
+    const normalizedUsername = username.toLowerCase().trim();
 
-    const existingUser = await User.findOne({
+    if (/\s/.test(username)) {
+      return res.status(400).json({ message: "Username cannot contain spaces" });
+    }
+
+    const existingEmail = await User.findOne({
       email: normalizedEmail,
     });
-    if (existingUser) {
+    if (existingEmail) {
       return res.status(400).json({ message: "Email already registered" });
+    }
+
+    const existingUsername = await User.findOne({
+      username: normalizedUsername,
+    });
+    if (existingUsername) {
+      return res.status(400).json({ message: "Username already taken" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = new User({
-      username,
+      username: normalizedUsername,
       email: normalizedEmail,
       password: hashedPassword,
     });
@@ -253,6 +268,12 @@ export const updateUserProfile = async (req, res) => {
 
     const normalizedUsername = username.toLowerCase().trim();
 
+    if (/\s/.test(username)) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Username cannot contain spaces" });
+    }
+
     const existingUser = await User.findOne({ username: normalizedUsername });
     if (existingUser && existingUser._id.toString() !== userId.toString()) {
       return res
@@ -311,17 +332,6 @@ export const followUser = async (req, res) => {
     await User.findByIdAndUpdate(targetUserId, {
       $push: { followers: currentUserId },
     });
-
-    // Real-time follow notification
-    const io = getIO();
-    if (io) {
-      io.to(targetUserId).emit("notification", {
-        type: "follow",
-        senderId: currentUserId,
-        senderName: currentUser.username,
-        message: `${currentUser.username} started following you`,
-      });
-    }
 
     return res
       .status(200)
@@ -427,5 +437,96 @@ export const getFollowing = async (req, res) => {
         success: false,
         message: "Error fetching following: " + error.message,
       });
+  }
+};
+
+export const forgotPassword = async (req, res) => {
+  const { email } = req.body;
+  try {
+    if (!email) {
+      return res.status(400).json({ success: false, message: "Email is required" });
+    }
+
+    const normalizedEmail = email.toLowerCase().trim();
+    const user = await User.findOne({ email: normalizedEmail });
+
+    if (!user) {
+      // Standard security: don't reveal if user doesn't exist
+      return res.status(200).json({
+        success: true,
+        message: "If that email exists in our system, we have sent a reset link.",
+      });
+    }
+
+    // Generate token
+    const token = crypto.randomBytes(20).toString("hex");
+    user.resetPasswordToken = token;
+    user.resetPasswordExpires = Date.now() + 3600000; // 1 hour expiration
+    await user.save();
+
+    // Reset Link URL
+    const clientOrigin = process.env.CLIENT_ORIGIN || "http://localhost:5173";
+    const resetUrl = `${clientOrigin}/login?token=${token}`;
+
+    const htmlContent = getPasswordResetTemplate(resetUrl);
+
+    await sendEmail({
+      to: user.email,
+      subject: "RUNTIME Password Reset Request",
+      html: htmlContent,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "If that email exists in our system, we have sent a reset link.",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Error sending password reset link: " + error.message,
+    });
+  }
+};
+
+export const resetPassword = async (req, res) => {
+  const { token, newPassword } = req.body;
+  try {
+    if (!token || !newPassword) {
+      return res.status(400).json({ success: false, message: "Token and password are required" });
+    }
+
+    const user = await User.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "Password reset token is invalid or has expired.",
+      });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: "Password must be at least 6 characters.",
+      });
+    }
+
+    user.password = await bcrypt.hash(newPassword, 10);
+    user.resetPasswordToken = null;
+    user.resetPasswordExpires = null;
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Password has been reset successfully. You can now log in.",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Error resetting password: " + error.message,
+    });
   }
 };

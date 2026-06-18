@@ -5,7 +5,10 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "dev": "node --watch index.js"
+    "dev": "node --watch index.js",
+    "seed": "node seed.js",
+    "seed:testuser": "node seedTestUser.js",
+    "upload:reels": "node uploadReelVideos.js"
   },
   "keywords": [],
   "author": "",
@@ -22,6 +25,7 @@
     "mongoose": "^9.6.3",
     "multer": "^2.1.1",
     "multer-storage-cloudinary": "^4.0.0",
+    "nodemailer": "^9.0.1",
     "socket.io": "^4.8.3"
   }
 }

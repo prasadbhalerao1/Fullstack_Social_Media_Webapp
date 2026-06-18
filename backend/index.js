@@ -52,4 +52,6 @@ connectDB();
 
 httpServer.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`[mailer] Active SMTP Host: ${process.env.SMTP_HOST || "none (Ethereal Fallback)"}`);
 });
+
