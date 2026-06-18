@@ -12,7 +12,6 @@ const EditProfileModal = ({ isOpen, onClose, currentUser }) => {
 
   useEffect(() => {
     if (currentUser) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setUsername(currentUser.username || "");
       setBio(currentUser.bio || "");
     }

@@ -16,7 +16,6 @@ const Modal = ({
 
   useEffect(() => {
     if (openModal) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setMounted(true);
       const timer = setTimeout(() => setShow(true), 10);
       return () => clearTimeout(timer);

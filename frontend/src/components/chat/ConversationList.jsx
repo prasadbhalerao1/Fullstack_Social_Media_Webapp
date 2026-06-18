@@ -46,7 +46,7 @@ const ConversationList = ({ collapsed }) => {
 
   if (conversationsLoading) {
     return (
-      <div className="flex-1 flex flex-col gap-2 p-3 overflow-y-auto">
+      <div className="flex-1 flex flex-col gap-2 p-3 overflow-y-auto custom-scrollbar">
         {[...Array(5)].map((_, i) => (
           <div key={i} className="flex items-center gap-3 animate-pulse">
             <div className="w-10 h-10 rounded-full bg-neutral-800 shrink-0" />
@@ -63,7 +63,7 @@ const ConversationList = ({ collapsed }) => {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto">
+    <div className="flex-1 overflow-y-auto custom-scrollbar">
       {conversations.length === 0
         ? !collapsed && (
             <div className="text-center text-neutral-500 text-xs px-3 py-8">

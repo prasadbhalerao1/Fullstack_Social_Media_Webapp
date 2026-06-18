@@ -33,7 +33,6 @@ const CreateMedia = ({ type = "post", onClose, onUploadSuccess }) => {
   const videoRef = useRef(null);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setFile(null);
     setCaption("");
     setPreviewUrl(null);
@@ -44,7 +43,6 @@ const CreateMedia = ({ type = "post", onClose, onUploadSuccess }) => {
   }, [currentType]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCurrentType(type);
   }, [type]);
 

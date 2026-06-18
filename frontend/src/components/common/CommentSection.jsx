@@ -7,7 +7,7 @@ const CommentSection = ({
   fallbackText = "No comments yet.",
 }) => {
   return (
-    <div className="flex-1 flex flex-col min-h-0 overflow-y-auto scrollbar-hide">
+    <div className="flex-1 flex flex-col min-h-0 overflow-y-auto no-scrollbar">
       {comments.length > 0 ? (
         <div className="flex flex-col gap-4">
           {comments.map((c, idx) => (

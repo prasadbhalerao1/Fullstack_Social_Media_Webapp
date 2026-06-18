@@ -64,7 +64,6 @@ const PostCard = ({ post, currentUser }) => {
 
     if (showPostModal) {
       video.pause();
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsPlaying(false);
       return;
     }
@@ -96,8 +95,27 @@ const PostCard = ({ post, currentUser }) => {
     };
   }, [post?.mediaType, showPostModal, isMuted]);
 
+  // Formats inline code wrapped in backticks
+  const formatCaption = (text) => {
+    if (!text) return null;
+    const parts = text.split(/(`[^`\n]+`)/g);
+    return parts.map((part, idx) => {
+      if (part.startsWith("`") && part.endsWith("`")) {
+        return (
+          <code
+            key={idx}
+            className="bg-neutral-900 border border-white/10 px-1.5 py-0.5 rounded font-mono text-xs text-cyan-400 font-normal mx-0.5"
+          >
+            {part.slice(1, -1)}
+          </code>
+        );
+      }
+      return <span key={idx}>{part}</span>;
+    });
+  };
+
   return (
-    <div className="w-full bg-black border-b border-white/10 sm:border sm:border-white/10 sm:rounded-xl sm:mb-4 mb-0 pb-4 sm:pb-0">
+    <div className="w-full bg-black border-b border-white/10 sm:border sm:border-white/10 sm:rounded-xl sm:mb-4 mb-0 pb-4 sm:pb-0 hover:border-white/20 transition-all duration-300">
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-3">
         <div className="flex items-center gap-3">
@@ -136,7 +154,7 @@ const PostCard = ({ post, currentUser }) => {
           )}
         </div>
       </div>
-
+ 
       {/* Media */}
       <Media
         item={post}
@@ -148,7 +166,7 @@ const PostCard = ({ post, currentUser }) => {
         handleMuteToggle={handleMuteToggle}
         containerClassName="max-h-[600px] border-y border-white/5 sm:border-none"
       />
-
+ 
       {/* Actions */}
       <MediaIcons
         type="post"
@@ -156,7 +174,7 @@ const PostCard = ({ post, currentUser }) => {
         size={24}
         handleOpenModal={() => setShowPostModal(true)}
       />
-
+ 
       {/* Post Info (Likes, Caption, Comments, Comment Form) */}
       <div className="px-3 pb-3 pt-1">
         {/* Likes Count */}
@@ -165,17 +183,19 @@ const PostCard = ({ post, currentUser }) => {
             {post.likes.length} {post.likes.length === 1 ? "like" : "likes"}
           </div>
         )}
-
+ 
         {/* Caption */}
         {post?.caption && (
-          <div className="text-sm text-white mb-1">
+          <div className="text-sm text-white mb-1.5">
             <Link
               to={`/profile/${post?.user?._id}`}
               className="font-semibold hover:underline mr-2"
             >
               {post?.user?.username}
             </Link>
-            <span className="text-white font-thin">{post.caption}</span>
+            <span className="text-neutral-300 font-light leading-relaxed">
+              {formatCaption(post.caption)}
+            </span>
           </div>
         )}
 

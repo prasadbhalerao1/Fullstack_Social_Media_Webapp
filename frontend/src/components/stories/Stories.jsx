@@ -419,7 +419,6 @@ const Stories = () => {
   // Reset progress and video playback when active story changes
   useEffect(() => {
     if (!showStoryModal || !currentStory) return;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setProgress(0);
     if (currentStory.mediaType === "video") {
       const video = videoRef.current;
@@ -442,7 +441,6 @@ const Stories = () => {
   // Reset states when modal is closed
   useEffect(() => {
     if (!showStoryModal) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setProgress(0);
       setIsPlaying(true);
       setShowCommentsModal(false);

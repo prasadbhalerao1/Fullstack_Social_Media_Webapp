@@ -12,12 +12,26 @@ const Suggestions = ({ isDarkTheme = true }) => {
   const [suggestedUsers, setSuggestedUsers] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    dispatch(getSuggestedUsers()).then((users) => {
-      setSuggestedUsers(users || []);
+  const loadSuggestions = async () => {
+    setLoading(true);
+    try {
+      const result = await dispatch(getSuggestedUsers());
+      // unwrap the raw thunk return value — it's already the user array
+      setSuggestedUsers(Array.isArray(result) ? result : []);
+    } catch {
+      setSuggestedUsers([]);
+    } finally {
       setLoading(false);
-    });
-  }, [dispatch]);
+    }
+  };
+
+  // Reload whenever logged-in user's following list changes (after a follow/unfollow)
+  useEffect(() => {
+    if (currentUser) {
+      loadSuggestions();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentUser?._id, currentUser?.following?.length]);
 
   // Hide suggested users sidebar on pages where it is not relevant
   const showSidebar = ["/"].includes(location.pathname);
@@ -30,6 +44,7 @@ const Suggestions = ({ isDarkTheme = true }) => {
       </div>
     );
   }
+
 
   const textColor = isDarkTheme ? "text-white" : "text-black";
   const subTextColor = isDarkTheme ? "text-neutral-400" : "text-neutral-600";

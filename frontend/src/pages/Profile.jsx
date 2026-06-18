@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { Camera, Heart, MessageCircle, Loader2, Send } from "lucide-react";
+import { Camera, Heart, MessageCircle, Loader2, Send, X } from "lucide-react";
 import Sidebar from "@/components/layout/Sidebar.jsx";
 import ProfileImage from "@/components/common/ProfileImage.jsx";
 import FollowButton from "@/components/common/FollowButton.jsx";
@@ -10,6 +10,8 @@ import PostDetailsModal from "@/components/posts/PostDetailsModal.jsx";
 import {
   getProfileById,
   updateProfileImage,
+  fetchFollowers,
+  fetchFollowing,
 } from "@/redux/slices/userSlice.js";
 import { getAllPosts } from "@/redux/slices/postSlice.js";
 import { getOrCreateConversation } from "@/redux/slices/messageSlice.js";
@@ -31,9 +33,13 @@ const Profile = () => {
   const [activeModalPost, setActiveModalPost] = useState(null);
   const [imageUploading, setImageUploading] = useState(false);
   const [dmLoading, setDmLoading] = useState(false);
+  const [followModal, setFollowModal] = useState(null); // "followers" | "following" | null
+  const [followList, setFollowList] = useState([]);
+  const [followListLoading, setFollowListLoading] = useState(false);
 
   const targetId = id === "me" ? currentUser?._id : id;
-  const isOwnProfile = id === "me" || (currentUser?._id && currentUser._id === id);
+  const isOwnProfile =
+    id === "me" || (currentUser?._id && currentUser._id === id);
 
   useEffect(() => {
     if (targetId) {
@@ -92,6 +98,20 @@ const Profile = () => {
     const conv = await dispatch(getOrCreateConversation(selectedUser._id));
     setDmLoading(false);
     if (conv) navigate("/chats");
+  };
+
+  const openFollowModal = async (type) => {
+    setFollowModal(type);
+    setFollowListLoading(true);
+    setFollowList([]);
+    const userId = selectedUser?._id;
+    if (!userId) return;
+    const list =
+      type === "followers"
+        ? await dispatch(fetchFollowers(userId))
+        : await dispatch(fetchFollowing(userId));
+    setFollowList(list || []);
+    setFollowListLoading(false);
   };
 
   if (profileLoading && !selectedUser) {
@@ -215,18 +235,24 @@ const Profile = () => {
                 </span>
                 <span className="text-neutral-400">posts</span>
               </div>
-              <div>
+              <button
+                onClick={() => openFollowModal("followers")}
+                className="hover:opacity-70 transition cursor-pointer text-left"
+              >
                 <span className="font-bold text-white mr-1">
                   {selectedUser.followers?.length || 0}
                 </span>
                 <span className="text-neutral-400">followers</span>
-              </div>
-              <div>
+              </button>
+              <button
+                onClick={() => openFollowModal("following")}
+                className="hover:opacity-70 transition cursor-pointer text-left"
+              >
                 <span className="font-bold text-white mr-1">
                   {selectedUser.following?.length || 0}
                 </span>
                 <span className="text-neutral-400">following</span>
-              </div>
+              </button>
             </div>
 
             {/* Bio section */}
@@ -311,6 +337,76 @@ const Profile = () => {
             if (targetId) dispatch(getProfileById(targetId)); // refresh profile posts list
           }}
         />
+      )}
+
+      {/* Followers / Following Modal */}
+      {followModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+          onClick={() => setFollowModal(null)}
+        >
+          <div
+            className="bg-neutral-950 border border-white/10 rounded-2xl w-full max-w-sm mx-4 overflow-hidden shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-white/8">
+              <h3 className="text-white font-semibold text-sm capitalize tracking-wide">
+                {followModal}
+              </h3>
+              <button
+                onClick={() => setFollowModal(null)}
+                className="text-neutral-500 hover:text-white transition rounded-full p-1"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* User List */}
+            <div className="overflow-y-auto max-h-80 px-3 py-3 flex flex-col gap-1">
+              {followListLoading ? (
+                <div className="flex justify-center py-8">
+                  <Loader2
+                    size={22}
+                    className="animate-spin text-neutral-500"
+                  />
+                </div>
+              ) : followList.length === 0 ? (
+                <p className="text-center text-neutral-500 text-sm py-8">
+                  No {followModal} yet.
+                </p>
+              ) : (
+                followList.map((u) => (
+                  <Link
+                    key={u._id}
+                    to={`/profile/${u._id}`}
+                    onClick={() => setFollowModal(null)}
+                    className="flex items-center gap-3 px-2 py-2.5 rounded-xl hover:bg-white/5 transition group"
+                  >
+                    <div className="w-9 h-9 rounded-full overflow-hidden shrink-0 border border-white/10">
+                      {u.profileImage ? (
+                        <img
+                          src={u.profileImage}
+                          alt={u.username}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-neutral-800 flex items-center justify-center text-xs text-neutral-400 font-bold">
+                          {u.username?.[0]?.toUpperCase()}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-white text-sm font-semibold truncate group-hover:underline">
+                        {u.username}
+                      </p>
+                    </div>
+                  </Link>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

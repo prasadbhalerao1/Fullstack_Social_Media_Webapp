@@ -251,7 +251,7 @@ const ChatWindow = ({ conversation }) => {
       {/* Messages */}
       <div
         ref={listRef}
-        className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-2"
+        className="flex-1 overflow-y-auto custom-scrollbar px-4 py-4 flex flex-col gap-2"
         style={{ scrollBehavior: "smooth" }}
       >
         {/* Top sentinel triggers loading older messages when scrolled into view */}

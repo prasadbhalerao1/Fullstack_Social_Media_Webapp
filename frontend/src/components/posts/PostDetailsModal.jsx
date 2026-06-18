@@ -73,13 +73,11 @@ const PostDetailsModal = ({ post, currentUser, isOpen, onClose, onDelete }) => {
             .then(() => {
               setIsPlaying(true);
             })
-            .catch((err) => console.log(err));
         } else {
           setIsPlaying(true);
         }
       } else {
         videoRef.current.pause();
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setIsPlaying(false);
       }
     }
@@ -143,7 +141,7 @@ const PostDetailsModal = ({ post, currentUser, isOpen, onClose, onDelete }) => {
           </div>
 
           {/* Comments Section */}
-          <div className="flex-none md:flex-1 md:overflow-y-auto p-4 flex flex-col gap-4 scrollbar-hide overflow-visible">
+          <div className="flex-none md:flex-1 md:overflow-y-auto custom-scrollbar p-4 flex flex-col gap-4 overflow-visible">
             {/* Caption (Treat as first comment) */}
             {post?.caption && (
               <div className="flex gap-3">

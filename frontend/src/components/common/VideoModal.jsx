@@ -47,7 +47,6 @@ const VideoModal = ({
   const isOwner = currentUser?._id === currentReel?.user?._id;
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCurrentIndex(initialIndex);
     setIsPlaying(true);
   }, [initialIndex, isOpen]);

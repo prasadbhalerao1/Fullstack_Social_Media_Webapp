@@ -34,7 +34,7 @@ const Explore = () => {
   return (
     <div className="bg-black/95 flex text-white min-h-screen">
       <Sidebar />
-      <main className="flex-1 overflow-y-auto px-4 py-6 md:py-8 max-w-5xl mx-auto flex flex-col gap-6 font-sans select-none pb-20 md:pb-8">
+      <main className="flex-1 overflow-y-auto custom-scrollbar px-4 py-6 md:py-8 max-w-5xl mx-auto flex flex-col gap-6 font-sans select-none pb-20 md:pb-8">
         {/* Search Bar */}
         <div className="relative w-full md:max-w-sm">
           <Search
@@ -46,7 +46,7 @@ const Explore = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search posts..."
-            className="w-full bg-neutral-900 border border-white/10 rounded-full pl-9 pr-4 py-2.5 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-white/30 transition"
+            className="w-full bg-neutral-900 border border-white/10 hover:border-white/25 rounded-full pl-9 pr-4 py-2.5 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-white/35 focus:ring-1 focus:ring-white/10 transition duration-200"
           />
         </div>
 
@@ -62,24 +62,24 @@ const Explore = () => {
               : "No posts yet."}
           </div>
         ) : (
-          <div className="grid grid-cols-3 gap-0.5 md:gap-1">
+          <div className="grid grid-cols-3 gap-2 sm:gap-3 md:gap-4">
             {filteredPosts.map((post) => (
               <div
                 key={post._id}
                 onClick={() => setActivePost(post)}
-                className="relative aspect-square bg-neutral-950 overflow-hidden cursor-pointer group"
+                className="relative aspect-square bg-neutral-950 overflow-hidden cursor-pointer group rounded-2xl border border-white/5 hover:border-white/20 hover:-translate-y-0.5 transition-all duration-300"
               >
                 {post.mediaType === "image" ? (
                   <img
                     src={post.mediaUrl}
                     alt={post.caption || "Post"}
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     loading="lazy"
                   />
                 ) : (
                   <video
                     src={post.mediaUrl}
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     muted
                     playsInline
                   />
