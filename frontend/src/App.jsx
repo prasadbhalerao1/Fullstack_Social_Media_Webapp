@@ -9,20 +9,19 @@ import Login from "@/pages/Login.jsx";
 import Explore from "@/pages/Explore.jsx";
 import Reels from "@/pages/Reels.jsx";
 import Message from "@/pages/Message.jsx";
+import Landing from "@/pages/Landing.jsx";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Loader2 } from "lucide-react";
 import { getCurrentUser } from "./redux/slices/userSlice.js";
 import { SocketProvider } from "@/context/SocketContext.jsx";
 import BottomNav from "@/components/layout/BottomNav.jsx";
-import NotificationsDrawer from "@/components/common/NotificationsDrawer.jsx";
 
 // Wraps every authenticated page with the mobile bottom nav
 const AppLayout = ({ children }) => (
   <>
     {children}
     <BottomNav />
-    <NotificationsDrawer />
   </>
 );
 
@@ -44,6 +43,28 @@ const ProtectedRoute = ({ children }) => {
   return <AppLayout>{children}</AppLayout>;
 };
 
+const RootRoute = () => {
+  const { user, loading } = useSelector((state) => state.user);
+
+  if (loading) {
+    return (
+      <div className="bg-black flex text-white min-h-screen justify-center items-center">
+        <Loader2 className="animate-spin text-white w-10 h-10" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Landing />;
+  }
+
+  return (
+    <AppLayout>
+      <Home />
+    </AppLayout>
+  );
+};
+
 function App() {
   const dispatch = useDispatch();
   useEffect(() => {
@@ -53,11 +74,7 @@ function App() {
   const router = createBrowserRouter([
     {
       path: "/",
-      element: (
-        <ProtectedRoute>
-          <Home />
-        </ProtectedRoute>
-      ),
+      element: <RootRoute />,
     },
     {
       path: "/explore",

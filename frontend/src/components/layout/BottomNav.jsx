@@ -1,14 +1,12 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { Home, Search, Film, MessageCircle, User, Plus, Bell } from "lucide-react";
-import { useSocket } from "@/context/SocketContext.jsx";
+import { Home, Search, Film, MessageCircle, User, Plus } from "lucide-react";
 import Modal from "@/components/common/Modal.jsx";
 import CreateMedia from "@/components/media/CreateMedia.jsx";
 
 const BottomNav = () => {
   const { conversations, activeConversation } = useSelector((state) => state.messages);
-  const { unreadCount, setIsNotificationsOpen } = useSocket();
   const location = useLocation();
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -27,12 +25,6 @@ const BottomNav = () => {
     { id: "home", icon: <Home size={22} />, path: "/" },
     { id: "explore", icon: <Search size={22} />, path: "/explore" },
     { id: "reels", icon: <Film size={22} />, path: "/reels" },
-    {
-      id: "notifications",
-      icon: <Bell size={22} />,
-      badge: unreadCount,
-      onClick: () => setIsNotificationsOpen(true),
-    },
     {
       id: "messages",
       icon: <MessageCircle size={22} />,

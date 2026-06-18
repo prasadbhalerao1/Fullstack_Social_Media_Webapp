@@ -140,23 +140,7 @@ export const toggleLikePost = async (req, res) => {
         .json({ success: false, message: result.message });
     }
 
-    // Notify the post owner if the post was liked and it's not our own post
-    const postOwnerId = result.doc.user.toString();
-    if (result.isLiked && postOwnerId !== userId.toString()) {
-      const io = getIO();
-      if (io) {
-        const user = await User.findById(userId).select("username");
-        if (user) {
-          io.to(postOwnerId).emit("notification", {
-            type: "like",
-            senderId: userId,
-            senderName: user.username,
-            postId: result.doc._id,
-            message: `${user.username} liked your post`,
-          });
-        }
-      }
-    }
+
 
     return res.status(200).json({
       success: true,
@@ -184,23 +168,7 @@ export const addCommentToPost = async (req, res) => {
         .json({ success: false, message: result.message });
     }
 
-    // Notify the post owner of the new comment if it's not their own post
-    const postOwnerId = result.doc.user.toString();
-    if (postOwnerId !== userId.toString()) {
-      const io = getIO();
-      if (io) {
-        const commenter = await User.findById(userId).select("username");
-        if (commenter) {
-          io.to(postOwnerId).emit("notification", {
-            type: "comment",
-            senderId: userId,
-            senderName: commenter.username,
-            postId: result.doc._id,
-            message: `${commenter.username} commented on your post`,
-          });
-        }
-      }
-    }
+
 
     return res.status(200).json({
       success: true,

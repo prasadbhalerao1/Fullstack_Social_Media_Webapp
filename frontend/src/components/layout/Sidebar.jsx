@@ -8,11 +8,9 @@ import {
   MessageCircle,
   User,
   LogOut,
-  Bell,
   Plus,
 } from "lucide-react";
 import { logoutUser } from "@/redux/slices/userSlice.js";
-import { useSocket } from "@/context/SocketContext.jsx";
 import Modal from "@/components/common/Modal.jsx";
 import CreateMedia from "@/components/media/CreateMedia.jsx";
 
@@ -20,7 +18,6 @@ const logo = "/logo.png";
 
 const Sidebar = () => {
   const { conversations } = useSelector((state) => state.messages);
-  const { unreadCount, setIsNotificationsOpen } = useSocket();
   const dispatch = useDispatch();
   const location = useLocation();
   const navigate = useNavigate();
@@ -57,7 +54,6 @@ const Sidebar = () => {
       path: "/profile/me",
     },
     { id: "logout", name: "Logout", icon: <LogOut size={20} /> },
-    { id: "notifications", name: "Notifications", icon: <Bell size={20} />, badge: unreadCount },
   ];
 
   // Determine active item based on current URL path
@@ -111,10 +107,10 @@ const Sidebar = () => {
                   key={item.id}
                   to={item.path}
                   onClick={() => setActive(item.id)}
-                  className={`relative flex items-center gap-3 p-3 rounded-2xl transition-all duration-300 cursor-pointer justify-center md:justify-start ${activeClass}`}
+                  className={`relative flex items-center gap-3 p-3 rounded-2xl transition-all duration-300 cursor-pointer justify-center md:justify-start group ${activeClass}`}
                 >
                   {/* Icon with badge */}
-                  <div className="relative">
+                  <div className="relative group-hover:scale-110 transition-transform duration-200">
                     {item.icon}
                     {item.badge > 0 && (
                       <span className="absolute -top-1.5 -right-1.5 min-w-4 h-4 px-0.5 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center leading-none">
@@ -129,38 +125,16 @@ const Sidebar = () => {
               );
             }
 
-            if (item.id === "notifications") {
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => {
-                    setActive(item.id);
-                    setIsNotificationsOpen(true);
-                  }}
-                  className={`relative flex items-center gap-3 p-3 rounded-2xl transition-all duration-300 cursor-pointer justify-center md:justify-start ${activeClass}`}
-                >
-                  <div className="relative">
-                    {item.icon}
-                    {item.badge > 0 && (
-                      <span className="absolute -top-1.5 -right-1.5 min-w-4 h-4 px-0.5 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center leading-none">
-                        {item.badge > 99 ? "99+" : item.badge}
-                      </span>
-                    )}
-                  </div>
-                  <span className="hidden md:inline font-medium">
-                    {item.name}
-                  </span>
-                </button>
-              );
-            }
 
             return (
               <button
                 key={item.id}
                 onClick={() => setActive(item.id)}
-                className={`flex items-center gap-3 p-3 rounded-2xl transition-all duration-300 cursor-pointer justify-center md:justify-start ${activeClass}`}
+                className={`flex items-center gap-3 p-3 rounded-2xl transition-all duration-300 cursor-pointer justify-center md:justify-start group ${activeClass}`}
               >
-                {item.icon}
+                <div className="group-hover:scale-110 transition-transform duration-200">
+                  {item.icon}
+                </div>
                 <span className="hidden md:inline font-medium">
                   {item.name}
                 </span>
@@ -173,7 +147,7 @@ const Sidebar = () => {
         <div className="mt-auto px-2 pb-4">
           <button
             onClick={() => setIsCreateMediaModalOpen(true)}
-            className="flex items-center justify-center gap-2 w-full p-3 md:py-3.5 rounded-2xl bg-white hover:bg-neutral-200 text-black font-semibold shadow-lg shadow-white/10 transition-all duration-300 cursor-pointer"
+            className="flex items-center justify-center gap-2 w-full p-3 md:py-3.5 rounded-2xl bg-white hover:bg-neutral-200 text-black font-semibold shadow-lg shadow-white/10 hover:scale-[1.02] active:scale-98 transition-all duration-300 cursor-pointer"
           >
             <Plus size={20} />
             <span className="hidden md:inline font-medium">Create</span>
