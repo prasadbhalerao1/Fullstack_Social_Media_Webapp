@@ -112,7 +112,7 @@
   --sidebar-primary: oklch(0.488 0.243 264.376);
   --sidebar-primary-foreground: oklch(0.985 0 0);
   --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
 }
@@ -131,7 +131,11 @@
   }
 }
 
-/* Utility: hide scrollbars while keeping scroll functionality */
+/* ─────────────────────────────────────────────────────────────────────────────
+   Utility: hide scrollbars while keeping scroll functionality
+   Use on: reels feed, story strip, chat panels, drawers, modals where
+   the scrollbar would clash with the layout or feel too native.
+───────────────────────────────────────────────────────────────────────────── */
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -140,7 +144,49 @@
   display: none;
 }
 
-/* Safe area bottom padding for iOS home indicator */
+/* ─────────────────────────────────────────────────────────────────────────────
+   Utility: custom themed scrollbar — thin (4px), dark track, indigo thumb
+   ─ Applied globally to <html> so the browser/page scrollbar matches the theme
+   ─ Add `.custom-scrollbar` to any inner scrollable container for the same look
+   ─ Thumb fades from 25% → 55% indigo opacity on hover for a subtle feel
+   ─ Works in: Chrome, Edge, Safari (WebKit) + Firefox (scrollbar-width/color)
+───────────────────────────────────────────────────────────────────────────── */
+
+/* WebKit — Chrome, Edge, Safari */
+html::-webkit-scrollbar,
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+html::-webkit-scrollbar-track,
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+html::-webkit-scrollbar-thumb,
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15); /* white @ 15% */
+  border-radius: 999px;
+}
+
+html::-webkit-scrollbar-thumb:hover,
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.35); /* white @ 35% on hover */
+}
+
+/* Firefox */
+html,
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Safe area & mobile nav utilities
+───────────────────────────────────────────────────────────────────────────── */
+
+/* iOS home indicator clearance */
 .pb-safe {
   padding-bottom: max(1rem, env(safe-area-inset-bottom));
 }
@@ -151,3 +197,144 @@
     padding-bottom: 5rem; /* 80px — clears the bottom nav */
   }
 }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Landing Page Utilities (Cyan & Emerald Theme - Creative but aligned)
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/* High-Contrast Cyan to Emerald Gradient */
+.text-gradient-cyan-green {
+  background: linear-gradient(135deg, #00f0ff 0%, #00e599 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Cyan Pulsing Dot */
+.pulse-cyan {
+  box-shadow: 0 0 0 0 rgba(6, 182, 212, 0.7);
+  animation: pulse-cyan-anim 2s infinite;
+}
+
+@keyframes pulse-cyan-anim {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(6, 182, 212, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 6px rgba(6, 182, 212, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(6, 182, 212, 0);
+  }
+}
+
+/* Infinite Logos Marquee */
+.marquee-container {
+  overflow: hidden;
+  width: 100%;
+  position: relative;
+}
+
+.marquee-content {
+  display: flex;
+  width: max-content;
+  animation: marquee-scroll 30s linear infinite;
+}
+
+.marquee-content:hover {
+  animation-play-state: paused;
+}
+
+@keyframes marquee-scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+/* Radial Grid Mask for modern fade effect */
+.grid-mask {
+  mask-image: radial-gradient(circle at 50% 50%, black 30%, transparent 80%);
+  -webkit-mask-image: radial-gradient(circle at 50% 50%, black 30%, transparent 80%);
+}
+
+/* Border glows for card categories */
+.border-glow-cyan {
+  border-top: 2px solid rgba(6, 182, 212, 0.5) !important;
+}
+.border-glow-emerald {
+  border-top: 2px solid rgba(16, 185, 129, 0.5) !important;
+}
+.border-glow-amber {
+  border-top: 2px solid rgba(245, 158, 11, 0.5) !important;
+}
+.border-glow-sky {
+  border-top: 2px solid rgba(56, 189, 248, 0.5) !important;
+}
+
+/* Customized Glow Shadows on Hover (No purple/pink) */
+.glow-card-cyan {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.glow-card-cyan:hover {
+  border-color: rgba(6, 182, 212, 0.4) !important;
+  box-shadow: 0 20px 40px -15px rgba(6, 182, 212, 0.25) !important;
+  transform: translateY(-4px);
+}
+
+.glow-card-emerald {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.glow-card-emerald:hover {
+  border-color: rgba(16, 185, 129, 0.4) !important;
+  box-shadow: 0 20px 40px -15px rgba(16, 185, 129, 0.25) !important;
+  transform: translateY(-4px);
+}
+
+.glow-card-amber {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.glow-card-amber:hover {
+  border-color: rgba(245, 158, 11, 0.4) !important;
+  box-shadow: 0 20px 40px -15px rgba(245, 158, 11, 0.25) !important;
+  transform: translateY(-4px);
+}
+
+.glow-card-sky {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.glow-card-sky:hover {
+  border-color: rgba(56, 189, 248, 0.4) !important;
+  box-shadow: 0 20px 40px -15px rgba(56, 189, 248, 0.25) !important;
+  transform: translateY(-4px);
+}
+
+/* Ambient Radial Glows (Cyan & Emerald) */
+.radial-glow-cyan {
+  background: radial-gradient(circle 800px at 50% -100px, rgba(6, 182, 212, 0.15), transparent 85%);
+}
+
+.radial-glow-emerald {
+  background: radial-gradient(circle 600px at 85% 90%, rgba(16, 185, 129, 0.1), transparent 75%);
+}
+
+/* Perspective Tilt Mockup with Cyan-to-Emerald Glow */
+.mockup-perspective-cyan-emerald {
+  transform: perspective(1200px) rotateY(-10deg) rotateX(5deg) rotateZ(0.5deg);
+  box-shadow: 
+    -20px 20px 60px rgba(0, 0, 0, 0.95),
+    0px 0px 40px rgba(6, 182, 212, 0.05);
+  transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.8s ease;
+}
+.mockup-perspective-cyan-emerald:hover {
+  transform: perspective(1200px) rotateY(-2deg) rotateX(1deg) rotateZ(0deg) scale(1.03);
+  box-shadow: 
+    -10px 10px 40px rgba(0, 0, 0, 0.98),
+    0px 0px 60px rgba(16, 185, 129, 0.25);
+}
+

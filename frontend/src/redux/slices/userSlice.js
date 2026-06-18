@@ -117,7 +117,9 @@ export const registerUser = (userData, navigate) => async (dispatch) => {
       if (navigate) navigate("/");
     }
   } catch (error) {
-    dispatch(setError(error.response?.data?.message || "Registration failed."));
+    const errorMsg = error.response?.data?.message || "Registration failed.";
+    dispatch(setError(errorMsg));
+    toast.error(errorMsg);
   } finally {
     dispatch(setLoading(false));
   }
@@ -134,7 +136,9 @@ export const loginUser = (userData, navigate) => async (dispatch) => {
       if (navigate) navigate("/");
     }
   } catch (error) {
-    dispatch(setError(error.response?.data?.message || "Login failed."));
+    const errorMsg = error.response?.data?.message || "Login failed.";
+    dispatch(setError(errorMsg));
+    toast.error(errorMsg);
   } finally {
     dispatch(setLoading(false));
   }
@@ -308,3 +312,33 @@ export const updateUserProfile =
       dispatch(setLoading(false));
     }
   };
+
+export const forgotPassword = (emailData, callback) => async (dispatch) => {
+  dispatch(setLoading(true));
+  try {
+    const { data } = await axiosInstance.post("/user/forgot-password", emailData);
+    if (data.success) {
+      toast.success(data.message || "Reset instructions sent!");
+      if (callback) callback();
+    }
+  } catch (error) {
+    toast.error(error.response?.data?.message || "Failed to request reset link.");
+  } finally {
+    dispatch(setLoading(false));
+  }
+};
+
+export const passwordChange = (resetData, callback) => async (dispatch) => {
+  dispatch(setLoading(true));
+  try {
+    const { data } = await axiosInstance.post("/user/reset-password", resetData);
+    if (data.success) {
+      toast.success(data.message || "Password changed successfully!");
+      if (callback) callback();
+    }
+  } catch (error) {
+    toast.error(error.response?.data?.message || "Failed to change password.");
+  } finally {
+    dispatch(setLoading(false));
+  }
+};
