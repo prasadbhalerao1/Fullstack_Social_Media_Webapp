@@ -104,6 +104,11 @@ Copy `.env.example` to `.env` and fill in the values.
 | `CLOUDINARY_API_KEY` | Cloudinary API key | `123456789012345` |
 | `CLOUDINARY_API_SECRET` | Cloudinary API secret | `abcDEFghi...` |
 | `ALLOWED_ORIGINS` | Comma-separated list of allowed CORS origins | `http://localhost:5173,https://myapp.vercel.app` |
+| `SMTP_HOST` | Hostname of the SMTP relay | `smtp.gmail.com` |
+| `SMTP_PORT` | Port of the SMTP relay | `587` |
+| `SMTP_USER` | Email address/Username of the SMTP account | `your_email@gmail.com` |
+| `SMTP_PASS` | Password/App Password of the SMTP account | `your_gmail_app_password` |
+| `EMAIL_FROM` | The displayed sender email header | `"RUNTIME Dev Social" <your_email@gmail.com>` |
 
 ---
 
@@ -173,7 +178,7 @@ Base path: `/api/v1/user`
 | `GET` | `/suggested` | 🔐 | Returns up to 5 users not yet followed by the current user. |
 | `PUT` | `/update` | 🔐 | Update `username` and/or `bio`. |
 | `POST` | `/upload-profile` | 🔐 📎 | Upload a new profile image to Cloudinary. Field name: `profileImage`. |
-| `POST` | `/follow` | 🔐 | Follow a user. Body: `{ targetUserId }`. Emits a real-time `notification` event to the target. |
+| `POST` | `/follow` | 🔐 | Follow a user. Body: `{ targetUserId }`. |
 | `POST` | `/unfollow` | 🔐 | Unfollow a user. Body: `{ targetUserId }`. |
 | `GET` | `/:id/followers` | 🔐 | Get a list of followers for user `:id`. |
 | `GET` | `/:id/following` | 🔐 | Get a list of users that user `:id` follows. |
@@ -295,12 +300,6 @@ The Socket.IO server shares the same HTTP port as Express (`initSocket(httpServe
 | `react_message` | Client → Server | `{ messageId, emoji }` | Toggles reaction: same emoji removes, different emoji replaces, new emoji adds. |
 | `message_reaction` | Server → Both | `{ messageId, conversationId, reactions }` | Full reactions array emitted to both participants. |
 | `user_blocked` | Server → Target | `{ userId }` | Emitted to the blocked user when someone blocks them. |
-
-### Notifications
-
-| Event | Direction | Payload | Description |
-|-------|-----------|---------|-------------|
-| `notification` | Server → Target | `{ type, senderId, senderName, message }` | Sent to a user's personal room when someone follows them. Displayed as a toast on the client. |
 
 ---
 

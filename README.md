@@ -188,6 +188,13 @@ CLOUDINARY_CLOUD_NAME=your_cloud_name
 CLOUDINARY_API_KEY=your_api_key
 CLOUDINARY_API_SECRET=your_api_secret
 ALLOWED_ORIGINS=http://localhost:5173
+
+# SMTP Configurations (Gmail App Passwords or Brevo SMTP Relay)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your_email@gmail.com
+SMTP_PASS=your_gmail_app_password
+EMAIL_FROM="RUNTIME Dev Social" <your_email@gmail.com>
 ```
 
 **frontend/.env** (copy from `.env.example`):

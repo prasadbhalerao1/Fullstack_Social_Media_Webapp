@@ -206,7 +206,7 @@ Combined authentication page that renders `AuthForm`. Toggling between login and
 ### `Sidebar.jsx`
 Left sidebar on all protected pages. Collapses to icon-only on narrow viewports (`w-20`) and expands to `w-64` on `md+`. Contains:
 - Logo and app name ("RUNTIME")
-- Navigation: Home, Explore, Reels, Messages (with unread count badge), Profile, Notifications
+- Navigation: Home, Explore, Reels, Messages (with unread count badge), Profile
 - Logout button (dispatches `logoutUser` thunk)
 - Create button — opens `CreateMedia` modal
 
@@ -415,7 +415,6 @@ Socket is created with:
 2. Calls `disconnectSocket()` when the user logs out
 3. Listens for `getOnlineUsers` → sets `onlineUsers` array
 4. Listens for `user_last_seen` → updates `lastSeenMap`
-5. Listens for `notification` → shows a `react-hot-toast` toast with a bell icon
 
 Exposes via context: `socket`, `onlineUsers`, `lastSeenMap`, `isOnline(userId)`
 
