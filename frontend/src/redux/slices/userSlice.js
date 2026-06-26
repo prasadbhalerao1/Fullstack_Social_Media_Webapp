@@ -11,6 +11,7 @@ const initialState = {
   error: null,
   isAuthenticated: false,
   socket: null, // Track socket connection globally
+  isCheckingAuth: true, // Track the initial authentication check
 };
 
 export const userSlice = createSlice({
@@ -77,6 +78,9 @@ export const userSlice = createSlice({
         }
       }
     },
+    setCheckingAuth: (state, action) => {
+      state.isCheckingAuth = action.payload;
+    },
   },
 });
 
@@ -89,6 +93,7 @@ export const {
   setSocket,
   setSavedPost,
   updateFollowState,
+  setCheckingAuth,
 } = userSlice.actions;
 
 export default userSlice.reducer;
@@ -160,6 +165,7 @@ export const getCurrentUser = () => async (dispatch) => {
     );
   } finally {
     dispatch(setLoading(false));
+    dispatch(setCheckingAuth(false));
   }
 };
 

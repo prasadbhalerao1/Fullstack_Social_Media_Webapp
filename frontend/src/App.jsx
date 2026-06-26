@@ -26,9 +26,9 @@ const AppLayout = ({ children }) => (
 );
 
 const ProtectedRoute = ({ children }) => {
-  const { user, loading } = useSelector((state) => state.user);
+  const { user, isCheckingAuth } = useSelector((state) => state.user);
 
-  if (loading) {
+  if (isCheckingAuth) {
     return (
       <div className="bg-black flex text-white min-h-screen justify-center items-center">
         <Loader2 className="animate-spin text-white w-10 h-10" />
@@ -44,15 +44,7 @@ const ProtectedRoute = ({ children }) => {
 };
 
 const RootRoute = () => {
-  const { user, loading } = useSelector((state) => state.user);
-
-  if (loading) {
-    return (
-      <div className="bg-black flex text-white min-h-screen justify-center items-center">
-        <Loader2 className="animate-spin text-white w-10 h-10" />
-      </div>
-    );
-  }
+  const { user } = useSelector((state) => state.user);
 
   if (!user) {
     return <Landing />;

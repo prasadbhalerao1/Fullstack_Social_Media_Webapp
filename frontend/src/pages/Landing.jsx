@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import { motion } from "framer-motion";
 import {
   Heart,
@@ -11,11 +12,13 @@ import {
   Film,
   Users,
   MessageSquare,
-  Sparkles
+  Sparkles,
+  Loader2
 } from "lucide-react";
 
 export default function Landing() {
   const navigate = useNavigate();
+  const { isCheckingAuth } = useSelector((state) => state.user);
 
   const handleAuth = (view) => {
     if (view === "register") {
@@ -104,10 +107,20 @@ export default function Landing() {
         <div>
           <button 
             onClick={() => handleAuth("login")}
-            className="bg-white hover:bg-neutral-200 text-black text-xs sm:text-sm font-bold px-6 py-2.5 rounded-xl transition duration-200 shadow-md hover:shadow-[0_0_20px_rgba(255,255,255,0.2)] flex items-center gap-1.5 active:scale-95 cursor-pointer"
+            disabled={isCheckingAuth}
+            className="bg-white hover:bg-neutral-200 disabled:bg-neutral-800 disabled:text-neutral-500 text-black text-xs sm:text-sm font-bold px-6 py-2.5 rounded-xl transition duration-200 shadow-md hover:shadow-[0_0_20px_rgba(255,255,255,0.2)] flex items-center gap-1.5 active:scale-95 cursor-pointer disabled:pointer-events-none"
           >
-            <span>Sign In</span>
-            <ArrowRight size={14} />
+            {isCheckingAuth ? (
+              <>
+                <Loader2 className="animate-spin w-3.5 h-3.5 text-neutral-500" />
+                <span>Connecting...</span>
+              </>
+            ) : (
+              <>
+                <span>Sign In</span>
+                <ArrowRight size={14} />
+              </>
+            )}
           </button>
         </div>
       </header>
@@ -160,19 +173,28 @@ export default function Landing() {
             transition={{ duration: 0.5, delay: 0.3 }}
             className="flex flex-wrap items-center gap-4 mt-2"
           >
-            <button
-              onClick={() => handleAuth("register")}
-              className="bg-white hover:bg-neutral-200 text-black font-extrabold px-8 py-3.5 rounded-2xl transition duration-250 shadow-lg hover:shadow-[0_0_25px_rgba(6,182,212,0.35)] active:scale-95 cursor-pointer flex items-center gap-2 group"
-            >
-              <span>Start Building</span>
-              <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-            </button>
-            <button
-              onClick={() => handleAuth("login")}
-              className="bg-transparent border border-white/15 hover:border-cyan-500/40 text-white font-bold px-8 py-3.5 rounded-2xl transition duration-200 hover:bg-white/5 hover:shadow-[0_0_20px_rgba(6,182,212,0.1)] active:scale-95 cursor-pointer"
-            >
-              Sign In
-            </button>
+            {isCheckingAuth ? (
+              <div className="flex items-center gap-3 bg-neutral-900/60 border border-cyan-500/20 px-6 py-3.5 rounded-2xl text-cyan-400 font-bold select-none text-xs sm:text-sm font-mono">
+                <Loader2 className="animate-spin text-cyan-400 w-4 h-4 sm:w-5 sm:h-5" />
+                <span className="animate-pulse">Waking up server (Render free tier takes a moment)...</span>
+              </div>
+            ) : (
+              <>
+                <button
+                  onClick={() => handleAuth("register")}
+                  className="bg-white hover:bg-neutral-200 text-black font-extrabold px-8 py-3.5 rounded-2xl transition duration-250 shadow-lg hover:shadow-[0_0_25px_rgba(6,182,212,0.35)] active:scale-95 cursor-pointer flex items-center gap-2 group"
+                >
+                  <span>Start Building</span>
+                  <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                </button>
+                <button
+                  onClick={() => handleAuth("login")}
+                  className="bg-transparent border border-white/15 hover:border-cyan-500/40 text-white font-bold px-8 py-3.5 rounded-2xl transition duration-200 hover:bg-white/5 hover:shadow-[0_0_20px_rgba(6,182,212,0.1)] active:scale-95 cursor-pointer"
+                >
+                  Sign In
+                </button>
+              </>
+            )}
           </motion.div>
 
           {/* Social Proof */}
