@@ -29,7 +29,7 @@
 ## Tech Stack
 
 | Package | Version | Role |
-|---------|---------|------|
+| --------- | --------- | ---- |
 | Express | ^5.2.1 | HTTP framework |
 | Mongoose | ^9.6.3 | MongoDB ODM |
 | Socket.IO | ^4.8.3 | Real-time events |
@@ -46,7 +46,7 @@
 
 ## Directory Structure
 
-```
+```text
 backend/
 ├── config/
 │   ├── db.js                  # Mongoose connection
@@ -95,7 +95,7 @@ backend/
 Copy `.env.example` to `.env` and fill in the values.
 
 | Variable | Description | Example |
-|----------|-------------|---------|
+| ---------- | ------------- | --------- |
 | `NODE_ENV` | `development` or `production` | `development` |
 | `PORT` | Port the server listens on | `3000` |
 | `MONGO_URI` | MongoDB connection string | `mongodb://127.0.0.1:27017/socialmedia` |
@@ -129,12 +129,14 @@ The server starts at `http://localhost:3000`.
 All protected routes require a valid JWT. The token is issued as an `httpOnly` cookie on login/register and also returned in the JSON response body.
 
 **Cookie settings:**
+
 - `maxAge`: 30 days
 - `httpOnly`: `true` (not accessible via JS)
 - `secure`: `true` in production only
 - `sameSite`: `"none"` in production (required for cross-origin Vercel ↔ Render), `"lax"` in development
 
 **`authMiddleware`** reads the token from:
+
 1. `req.cookies.token` (primary — cookie-based)
 2. `Authorization: Bearer <token>` header (fallback)
 
@@ -145,13 +147,17 @@ It verifies the JWT, fetches the user from MongoDB (excluding the password), and
 ## Middleware
 
 ### `auth.middleware.js`
+
 Validates the JWT and populates `req.user`. Returns `401 Unauthorized` if the token is missing or invalid.
 
 ### `cloudinaryUpload.js`
+
 Configures `multer` with `multer-storage-cloudinary` as its storage engine. Exposes a single `uploadCloudinary` Multer instance used by routes that accept file uploads (posts, reels, stories, profile images, message media).
 
 ### `error.middleware.js`
+
 Two handlers mounted at the end of the Express middleware chain:
+
 - **`notFound`** — Catches any request that didn't match a route and responds with `404`.
 - **`errorHandler`** — Global error catcher. Returns the error message and stack trace (stack omitted in production).
 
@@ -170,7 +176,7 @@ All routes are prefixed with `/api/v1`.
 Base path: `/api/v1/user`
 
 | Method | Path | Auth | Description |
-|--------|------|------|-------------|
+| -------- | ------ | ------ | ------------- |
 | `POST` | `/register` | — | Register a new user. Body: `{ username, email, password }`. Returns user object + sets auth cookie. |
 | `POST` | `/login` | — | Login with `{ email, password }`. Returns user object + sets auth cookie. |
 | `GET` | `/logout` | — | Clears the auth cookie. |
@@ -192,7 +198,7 @@ Base path: `/api/v1/user`
 Base path: `/api/v1/post`
 
 | Method | Path | Auth | Description |
-|--------|------|------|-------------|
+| -------- | ------ | ------ | ------------- |
 | `POST` | `/create` | 🔐 📎 | Create a new post. Fields: `media` (file), `caption` (text), `mediaType` (`image`\|`video`). |
 | `GET` | `/all` | 🔐 | Fetch all posts (for the feed). |
 | `GET` | `/:id` | 🔐 | Get a single post by ID. |
@@ -208,7 +214,7 @@ Base path: `/api/v1/post`
 Base path: `/api/v1/reel`
 
 | Method | Path | Auth | Description |
-|--------|------|------|-------------|
+| -------- | ------ | ------ | ------------- |
 | `POST` | `/create` | 🔐 📎 | Create a new reel (video only). Fields: `media` (file), `caption`. |
 | `GET` | `/all` | 🔐 | Fetch all reels. |
 | `GET` | `/:id` | 🔐 | Get a single reel by ID. |
@@ -223,7 +229,7 @@ Base path: `/api/v1/reel`
 Base path: `/api/v1/story`
 
 | Method | Path | Auth | Description |
-|--------|------|------|-------------|
+| -------- | ------ | ------ | ------------- |
 | `POST` | `/create` | 🔐 📎 | Create a new story. Auto-expires after **24 hours** (MongoDB TTL index). Fields: `media`, `mediaType`. |
 | `GET` | `/all` | 🔐 | Fetch all active (non-expired) stories, grouped by user. |
 | `GET` | `/:id/view` | 🔐 | Record the current user as a viewer of story `:id`. Adds to `story.viewers` array. |
@@ -240,7 +246,7 @@ Base path: `/api/v1/message`
 All routes in this group require authentication (`router.use(authMiddleware)`).
 
 | Method | Path | Description |
-|--------|------|-------------|
+| -------- | ------ | ------------- |
 | `GET` | `/conversations` | Return all conversations for the current user, sorted by most recent activity. Each conversation includes the `lastMessage` and `participants`. |
 | `POST` | `/conversation/:userId` | Get an existing conversation with user `:userId`, or create one if none exists. Returns the conversation object. |
 | `GET` | `/:conversationId` | Fetch messages for a conversation. Supports **cursor-based pagination** via `?cursor=<lastMessageId>` (30 per page). Returns `{ messages, hasMore, nextCursor }`. |
@@ -257,7 +263,7 @@ The Socket.IO server shares the same HTTP port as Express (`initSocket(httpServe
 ### Connection & Presence
 
 | Event | Direction | Payload | Description |
-|-------|-----------|---------|-------------|
+| ------- | ----------- | --------- | ------------- |
 | `connection` | Server ← Client | — | User connects. Adds socket to `onlineUsers` Map, clears `lastSeen` in DB, delivers pending messages. |
 | `disconnect` | Server ← Client | — | Removes socket. If no sockets remain for the user, writes `lastSeen` timestamp to DB. |
 | `online_users` | Server → All | `string[]` (userIds) | Broadcast after any connect/disconnect. |
@@ -267,14 +273,14 @@ The Socket.IO server shares the same HTTP port as Express (`initSocket(httpServe
 ### Conversation Rooms
 
 | Event | Direction | Payload | Description |
-|-------|-----------|---------|-------------|
+| ------- | ----------- | --------- | ------------- |
 | `join_conversation` | Client → Server | `{ conversationId }` | Joins the socket room `conv_<conversationId>`. Required for message events to be received. |
 | `leave_conversation` | Client → Server | `{ conversationId }` | Leaves the conversation room. |
 
 ### Typing Indicators
 
 | Event | Direction | Payload | Description |
-|-------|-----------|---------|-------------|
+| ------- | ----------- | --------- | ------------- |
 | `typing_start` | Client → Server | `{ conversationId, receiverId }` | Forwarded to `receiverId`'s personal room. |
 | `typing_stop` | Client → Server | `{ conversationId, receiverId }` | Forwarded to `receiverId`'s personal room. |
 | `typing_indicator` | Server → Client | `{ conversationId, userId, isTyping }` | Received by the other participant. |
@@ -282,7 +288,7 @@ The Socket.IO server shares the same HTTP port as Express (`initSocket(httpServe
 ### Message Delivery Status
 
 | Event | Direction | Payload | Description |
-|-------|-----------|---------|-------------|
+| ------- | ----------- | --------- | ------------- |
 | `messages_seen` | Client → Server | `{ conversationId }` | Marks all unread messages in the conversation as `"read"` in DB. Notifies senders. |
 | `receive_message` | Server → Receiver | populated message object | Emitted to the receiver's personal room when a message is sent and the receiver is online. |
 | `message_sent_ack` | Server → Sender | `{ tempId, message }` | Sent back to the sender after the message is saved — used to confirm and replace the optimistic message. |
@@ -292,7 +298,7 @@ The Socket.IO server shares the same HTTP port as Express (`initSocket(httpServe
 ### Message Actions
 
 | Event | Direction | Payload | Description |
-|-------|-----------|---------|-------------|
+| ------- | ----------- | --------- | ------------- |
 | `delete_message` | Client → Server | `{ messageId, deleteFor: "me" \| "everyone" }` | Only the sender can delete for everyone. Soft-deletes by populating `deletedFor`. |
 | `message_deleted` | Server → Client(s) | `{ messageId, conversationId, deleteFor }` | Emitted to relevant clients after deletion. |
 | `edit_message` | Client → Server | `{ messageId, text }` | Sender-only. Updates `text`, sets `isEdited: true`, `editedAt`. |
@@ -315,6 +321,7 @@ All controllers use `try/catch`. Controller errors return a consistent JSON shap
 ```
 
 The global `errorHandler` middleware returns:
+
 ```json
 {
   "success": false,
@@ -322,9 +329,11 @@ The global `errorHandler` middleware returns:
   "stack": null
 }
 ```
+
 (`stack` is set to `null` in production, included in development.)
 
 HTTP status codes used:
+
 - `200` — OK
 - `201` — Created
 - `400` — Bad Request (validation / already exists)
